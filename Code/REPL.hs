@@ -18,7 +18,7 @@ updateVars name value set = (name, value) : [(n,v) | (n,v) <- set, name /= n]
 
 -- Return a new set of variables with the given name removed
 dropVar :: Name -> [(Name, Int)] -> [(Name, Int)]
-dropVar = undefined
+dropVar name set = [(n,v) | (n,v) <- set, name /= n] 
 
 -- Add a command to the command history in the state
 addHistory :: State -> Command -> State
