@@ -14,7 +14,7 @@ initState = State [] 0 []
 -- that name and value added.
 -- If it already exists, remove the old value
 updateVars :: Name -> Int -> [(Name, Int)] -> [(Name, Int)]
-updateVars name value set = (name, value) : [(n,v) | (n,v) <- set, name /= n] 
+updateVars name value set = (name, value) : dropVar name set
 
 -- Return a new set of variables with the given name removed
 dropVar :: Name -> [(Name, Int)] -> [(Name, Int)]
