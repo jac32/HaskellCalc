@@ -22,19 +22,25 @@ dropVar name set = [(n,v) | (n,v) <- set, name /= n]
 
 -- Add a command to the command history in the state
 addHistory :: State -> Command -> State
-addHistory state command = undefined --command : (history state)
+addHistory state command = state { numCalcs = (numCalcs state)  + 1,
+                                   history = command : (history state) }
+
+
+
+
+  --command : (history state)
 
 
 process :: State -> Command -> IO ()
 process st (Set var e) 
-     = do let st' = undefined
-          -- st' should include the variable set to the result of evaluating e
-          repl st'
+  = do let st' = undefined
+                
+           -- st' should include the variable set to the result of evaluating
+       repl st'
 process st (Eval e) 
-     = do let st' = st
-          putStrLn(show (eval (vars st') e))
-          -- Print the result of evaluation
-          repl st'
+  = do let st' = st
+       putStrLn(show (eval (vars st') e)) -- Print the result of evaluation
+       repl st'
 
 
 -- Read, Eval, Print Loop
@@ -46,9 +52,18 @@ repl :: State -> IO ()
 repl st = do putStr (show (numCalcs st) ++ " > ")
              inp <- getLine
              case parse pCommand inp of
-                  [(cmd, "")] -> -- Must parse entire input
-                          process st cmd
-                  
-                  _ -> do putStrLn "Parse error"
-                          repl st
+               [(cmd, "")] -> -- Must parse entire input
+                 process st cmd
 
+               _ -> do putStrLn "Parse error"
+                       repl st
+
+
+-- repl :: State -> IO ()
+-- repl st = do putStr (show (numCalcs st) ++ " > ")
+--              inp <- getLine
+--              case parse pCommand inp of
+--                   [(cmd, "")] -> -- Must parse entire input
+--                           process st cmd
+--                   _ -> do putStrLn "Parse error"
+--                           repl st
