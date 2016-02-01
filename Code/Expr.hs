@@ -9,6 +9,7 @@ type Name = String
 data Expr = Add Expr Expr
   | Sub Expr Expr
   | Mult Expr Expr
+  | Div Expr Expr      
   | Val Int
   deriving Show
 
@@ -26,9 +27,19 @@ eval vars (Val x) = Just x    -- for values, just give the value directly
 eval vars (Add x y) =  case (eval vars x, eval vars y) of
   (Just x', Just y') -> Just (x' + y')
   _ -> Nothing
+
+eval vars (Sub x y) =  case (eval vars x, eval vars y) of
+  (Just x', Just y') -> Just (x' - y')
+  _ -> Nothing
+  
 eval vars (Mult x y) = case (eval vars x, eval vars y) of
   (Just x', Just y') -> Just (x' * y')
   _ -> Nothing
+
+eval vars (Div x y) = case (eval vars x, eval vars y) of
+  (Just x', Just y') -> Just (x' `div` y')
+  _ -> Nothing
+
 
 
 digitToInt :: Char -> Int
@@ -67,8 +78,8 @@ pTerm = do f <- pFactor
            do char '*'
               t <- pTerm
               return (Mult t f)
-            ||| do char '/'
-                   t <- pTerm
-                   error "Division not yet implemented" 
-                 ||| return f
+              ||| do char '/'
+                     t <- pTerm
+                     return (Div t f)
+                     ||| return f
 
