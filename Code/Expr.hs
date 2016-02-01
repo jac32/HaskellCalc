@@ -7,20 +7,28 @@ type Name = String
 -- At first, 'Expr' contains only addition and values. You will need to 
 -- add other operations, and variables
 data Expr = Add Expr Expr
-          | Val Int
+  | Mult Expr Expr
+  | Val Int
   deriving Show
 
 -- These are the REPL commands - set a variable name to a value, and evaluate
 -- an expression
 data Command = Set Name Expr
-             | Eval Expr
+  | Eval Expr
   deriving Show
 
 eval :: [(Name, Int)] -> -- Variable name to value mapping
         Expr -> -- Expression to evaluate
         Maybe Int -- Result (if no errors such as missing variables)
 eval vars (Val x) = Just x -- for values, just give the value directly
-eval vars (Add x y) = Nothing -- return an error (because it's not implemented yet!)
+
+eval vars (Add x y) =  case (eval vars x, eval vars y) of
+  (Just x', Just y') -> Just (x' + y')
+  _ -> Nothing
+eval vars (Mult x y) = case (eval vars x, eval vars y) of
+  (Just x', Just y') -> Just (x' * y')
+  _ -> Nothing
+
 
 digitToInt :: Char -> Int
 digitToInt x = fromEnum x - fromEnum '0'
@@ -57,7 +65,7 @@ pTerm :: Parser Expr
 pTerm = do f <- pFactor
            do char '*'
               t <- pTerm
-              error "Multiplication not yet implemented" 
+              error "Multiplication not yet implemented"
             ||| do char '/'
                    t <- pTerm
                    error "Division not yet implemented" 
