@@ -7,6 +7,7 @@ type Name = String
 -- At first, 'Expr' contains only addition and values. You will need to 
 -- add other operations, and variables
 data Expr = Add Expr Expr
+  | Sub Expr Expr
   | Mult Expr Expr
   | Val Int
   deriving Show
@@ -17,10 +18,10 @@ data Command = Set Name Expr
   | Eval Expr
   deriving Show
 
-eval :: [(Name, Int)] -> -- Variable name to value mapping
-        Expr -> -- Expression to evaluate
-        Maybe Int -- Result (if no errors such as missing variables)
-eval vars (Val x) = Just x -- for values, just give the value directly
+eval :: [(Name, Int)] ->      -- Variable name to value mapping
+        Expr ->               -- Expression to evaluate
+        Maybe Int             -- Result (if no errors such as missing variables)
+eval vars (Val x) = Just x    -- for values, just give the value directly
 
 eval vars (Add x y) =  case (eval vars x, eval vars y) of
   (Just x', Just y') -> Just (x' + y')
@@ -46,10 +47,10 @@ pExpr = do t <- pTerm
            do char '+'
               e <- pExpr
               return (Add t e)
-            ||| do char '-'
-                   e <- pExpr
-                   error "Subtraction not yet implemented!" 
-                 ||| return t
+              ||| do char '-'
+                     e <- pExpr
+                     return (Sub t e)
+              ||| return t
 
 pFactor :: Parser Expr
 pFactor = do d <- digit
