@@ -65,7 +65,7 @@ pTerm :: Parser Expr
 pTerm = do f <- pFactor
            do char '*'
               t <- pTerm
-              error "Multiplication not yet implemented"
+              return (Mult t f)
             ||| do char '/'
                    t <- pTerm
                    error "Division not yet implemented" 
