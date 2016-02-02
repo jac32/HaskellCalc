@@ -29,7 +29,7 @@ getNthFromList list pos | pos == 0 = head list
 -- Add a command to the command history in the state
 addHistory :: State -> Command -> State
 addHistory state command = state { numCalcs = (numCalcs state)  + 1,
-                                   history = command : (history state) }
+                                   history = (history state) ++ [command] }
 toInt :: (Maybe Int) -> Int
 toInt (Just x) = x
 
@@ -46,7 +46,6 @@ process st (Eval e)
   = do let st' = addHistory st (Eval e)
        putStrLn(show (toInt (eval (vars st') e))) -- Print the result of evaluation
        repl st'
-
 
 -- Read, Eval, Print Loop
 -- This reads and parses the input using the pCommand parser, and calls
