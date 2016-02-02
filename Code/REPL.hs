@@ -20,25 +20,25 @@ updateVars name value set = (name, value) : dropVar name set
 dropVar :: Name -> [(Name, Int)] -> [(Name, Int)]
 dropVar name set = [(n,v) | (n,v) <- set, name /= n] 
 
+-- Return the value of the named integer
+-- getVar :: Name -> [(Name, Int)] -> Int
+-- getVar v = (snd (head [(name, val) | (name, val) <- vars, name == v]))
+
 -- Add a command to the command history in the state
 addHistory :: State -> Command -> State
 addHistory state command = state { numCalcs = (numCalcs state)  + 1,
                                    history = command : (history state) }
 
 
-
-
-  --command : (history state)
-
-
 process :: State -> Command -> IO ()
 process st (Set var e) 
-  = do let st' = undefined
+  = do let st' = addHistory st { vars  = updateVars var 2 (vars st) } (Set var e)
+
                 
            -- st' should include the variable set to the result of evaluating
        repl st'
 process st (Eval e) 
-  = do let st' = st
+  = do let st' = addHistory st (Eval e)
        putStrLn(show (eval (vars st') e)) -- Print the result of evaluation
        repl st'
 
@@ -51,19 +51,14 @@ process st (Eval e)
 repl :: State -> IO ()
 repl st = do putStr (show (numCalcs st) ++ " > ")
              inp <- getLine
-             case parse pCommand inp of
-               [(cmd, "")] -> -- Must parse entire input
-                 process st cmd
+             handleInput st inp 
 
-               _ -> do putStrLn "Parse error"
-                       repl st
-
-
--- repl :: State -> IO ()
--- repl st = do putStr (show (numCalcs st) ++ " > ")
---              inp <- getLine
---              case parse pCommand inp of
---                   [(cmd, "")] -> -- Must parse entire input
---                           process st cmd
---                   _ -> do putStrLn "Parse error"
---                           repl st
+handleInput :: State -> String -> IO ()
+handleInput st inp 
+  | (inp /= ":q") = 
+      case parse pCommand inp of
+        [(cmd, "")] -> -- Must parse entire input
+          process st cmd
+        _ -> do putStrLn "Parse error"
+                repl st
+  | otherwise = putStrLn "Bye"
