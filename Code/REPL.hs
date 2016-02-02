@@ -26,7 +26,6 @@ getNthFromList :: [a] -> Int -> a
 getNthFromList list pos | pos == 0 = head list
                         | otherwise = getNthFromList (tail list) (pos - 1)
 
-
 -- Add a command to the command history in the state
 addHistory :: State -> Command -> State
 addHistory state command = state { numCalcs = (numCalcs state)  + 1,
@@ -45,7 +44,7 @@ process st (Fetch e)
        repl st'
 process st (Eval e) 
   = do let st' = addHistory st (Eval e)
-       putStrLn(show (eval (vars st') e)) -- Print the result of evaluation
+       putStrLn(show (toInt (eval (vars st') e))) -- Print the result of evaluation
        repl st'
 
 
