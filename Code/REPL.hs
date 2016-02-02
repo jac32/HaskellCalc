@@ -10,8 +10,7 @@ data State = State { vars :: [(Name, Int)],
 initState :: State
 initState = State [] 0 []
 
--- Given a variable name and a value, return a new set of variables with
--- that name and value added.
+-- Given a variable name and a value, return a new set of variables with that name and value added.
 -- If it already exists, remove the old value
 updateVars :: Name ->Int -> [(Name,Int)] -> [(Name,Int)]
 updateVars name value set = (name, value) : dropVar name set
@@ -20,9 +19,13 @@ updateVars name value set = (name, value) : dropVar name set
 dropVar :: Name -> [(Name,Int)] -> [(Name,Int)]
 dropVar name set = [(n,v) | (n,v) <- set, name /= n] 
 
--- Return the value of the named integer
--- getVar :: Name -> [(Name, Int)] -> Int
--- getVar v = (snd (head [(name, val) | (name, val) <- vars, name == v]))
+getNthCommand :: State -> Int -> Command
+getNthCommand st n = getNthFromList (history st) n
+
+getNthFromList :: [a] -> Int -> a
+getNthFromList list pos | pos == 0 = head list
+                        | otherwise = getNthFromList (tail list) (pos - 1)
+
 
 -- Add a command to the command history in the state
 addHistory :: State -> Command -> State
@@ -34,8 +37,10 @@ toInt (Just x) = x
 process :: State -> Command -> IO ()
 process st (Set var e) 
   = do let st' = addHistory st { vars  = updateVars var (toInt (eval (vars st) e)) (vars st) } (Set var e)
-
-                
+       repl st'
+process st (Fetch e)
+  = do let st' = st
+       process st (getNthCommand st (toInt (eval (vars st') e)))
            -- st' should include the variable set to the result of evaluating
        repl st'
 process st (Eval e) 

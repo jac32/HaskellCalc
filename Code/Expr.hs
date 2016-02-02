@@ -16,6 +16,7 @@ data Expr = Add Expr Expr
 -- an expression
 data Command = Set Name Expr
   | Eval Expr
+  | Fetch Expr
   deriving Show
 
 eval :: [(Name, Int)] ->      -- Variable name to value mapping
@@ -57,12 +58,15 @@ negDigitToInt x = fromEnum '0' - fromEnum x
 
 --top of parse tree
 pCommand :: Parser Command
-pCommand = do t <- letter --if variable
-              char '='
+pCommand = do char '!'
               e <- pExpr
-              return (Set [t] e) --Set t to e, and store in vars in the state
-              ||| do e <- pExpr
-                     return (Eval e)
+              return (Fetch e)
+              ||| do t <- letter --if variable
+                     char '='
+                     e <- pExpr
+                     return (Set [t] e) --Set t to e, and store in vars in the state
+                     ||| do e <- pExpr
+                            return (Eval e)
 
 pExpr :: Parser Expr
 pExpr = do t <- pTerm
@@ -93,7 +97,7 @@ pTerm :: Parser Expr
 pTerm = do f <- pFactor
            do char '*'
               t <- pTerm
-              return (Mult t f)
+              return (Mult f t)
               ||| do char '/'
                      t <- pTerm
                      return (Div f t)
