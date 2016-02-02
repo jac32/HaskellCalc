@@ -88,14 +88,14 @@ pFactor = do d <- digit
                            char ')'
                            return e
 
---gets called in pExpr, to indicate precedence for mult and div              
-pTerm :: Parser Expr
+--gets called in pExpr, to indicate precedence for mult and div               
+pTerm :: Parser Expr 
 pTerm = do f <- pFactor
            do char '*'
               t <- pTerm
               return (Mult t f)
               ||| do char '/'
                      t <- pTerm
-                     return (Div t f)
-                     ||| return f
+                     return (Div f t)
+              ||| return f
 
