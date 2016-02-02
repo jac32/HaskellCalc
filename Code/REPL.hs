@@ -13,11 +13,11 @@ initState = State [] 0 []
 -- Given a variable name and a value, return a new set of variables with
 -- that name and value added.
 -- If it already exists, remove the old value
-updateVars :: Name -> Int -> [(Name, Int)] -> [(Name, Int)]
+updateVars :: Name ->Int -> [(Name,Int)] -> [(Name,Int)]
 updateVars name value set = (name, value) : dropVar name set
 
 -- Return a new set of variables with the given name removed
-dropVar :: Name -> [(Name, Int)] -> [(Name, Int)]
+dropVar :: Name -> [(Name,Int)] -> [(Name,Int)]
 dropVar name set = [(n,v) | (n,v) <- set, name /= n] 
 
 -- Return the value of the named integer
@@ -28,11 +28,12 @@ dropVar name set = [(n,v) | (n,v) <- set, name /= n]
 addHistory :: State -> Command -> State
 addHistory state command = state { numCalcs = (numCalcs state)  + 1,
                                    history = command : (history state) }
-
+toInt :: (Maybe Int) -> Int
+toInt (Just x) = x
 
 process :: State -> Command -> IO ()
 process st (Set var e) 
-  = do let st' = addHistory st { vars  = updateVars var 2 (vars st) } (Set var e)
+  = do let st' = addHistory st { vars  = updateVars var (toInt (eval (vars st) e)) (vars st) } (Set var e)
 
                 
            -- st' should include the variable set to the result of evaluating
@@ -53,6 +54,7 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
              inp <- getLine
              handleInput st inp 
 
+--before any parsing occurs, the input is checked for ':q" 
 handleInput :: State -> String -> IO ()
 handleInput st inp 
   | (inp /= ":q") = 
