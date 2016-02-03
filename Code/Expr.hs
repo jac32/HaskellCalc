@@ -83,8 +83,10 @@ pFactor :: Parser Expr
 pFactor = do d <- digit
              return (Val (digitToInt d))
              ||| do char '-' --negative numbers
-                    d <- digit
-                    return (Val(negDigitToInt(d)))
+                    do d <- digit 
+                       return (Val(negDigitToInt(d)))
+                       ||| do v <- letter
+                              return (Var v)
              ||| do v <- letter
                     return (Var v)
                     ||| do char '('
