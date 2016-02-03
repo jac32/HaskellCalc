@@ -41,7 +41,7 @@ process st (Fetch e)
   = do let st' = st
        process st (getNthCommand st (toInt (eval (vars st') e)))
            -- st' should include the variable set to the result of evaluating
-       repl st'
+       
 process st (Eval e) 
   = do let st' = addHistory st (Eval e)
        putStrLn(show (toInt (eval (vars st') e))) -- Print the result of evaluation
