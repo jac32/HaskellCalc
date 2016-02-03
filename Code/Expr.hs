@@ -7,7 +7,8 @@ type Name = String
 data Expr = Add Expr Expr
   | Sub Expr Expr
   | Mult Expr Expr
-  | Div Expr Expr      
+  | Div Expr Expr
+  | Neg Expr
   | Val Int
   | Var Char
   deriving Show
@@ -28,6 +29,9 @@ eval vars (Val x) = Just x    -- for values, just give the value directly
 --the list comprehension retrieves all name value pairs in vars where the name is equal to v
 eval vars (Var v) = Just (snd (head [(name, val) | (name, val) <- vars, name == [v]]))
 
+eval vars (Neg e) = case (eval vars e) of
+  (Just x) -> Just (-x)
+  _-> Nothing
 
 --performs addition, subtraction, multiplication, and division if 
 --eval vars x and eval vars y return a Just int, and not Nothing
@@ -46,8 +50,6 @@ eval vars (Mult x y) = case (eval vars x, eval vars y) of
 eval vars (Div x y) = case (eval vars x, eval vars y) of
   (Just x', Just y') -> Just (x' `div` y')
   _ -> Nothing
-
-
 
 
 digitToInt :: Char -> Int
@@ -85,8 +87,8 @@ pFactor = do d <- digit
              ||| do char '-' --negative numbers
                     do d <- digit 
                        return (Val(negDigitToInt(d)))
-                       ||| do v <- letter
-                              return (Var v)
+                       ||| do v <- letter --negative variable
+                              return (Neg (Var v))
              ||| do v <- letter
                     return (Var v)
                     ||| do char '('
