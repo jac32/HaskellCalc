@@ -55,9 +55,6 @@ eval vars (Div x y) = case (eval vars x, eval vars y) of
 digitToInt :: Char -> Int
 digitToInt x = fromEnum x - fromEnum '0'
 
-negDigitToInt :: Char -> Int
-negDigitToInt x = fromEnum '0' - fromEnum x
-
 --top of parse tree
 pCommand :: Parser Command
 pCommand = do char '!'
@@ -86,7 +83,7 @@ pFactor = do d <- digit
              return (Val (digitToInt d))
              ||| do char '-' --negative numbers
                     do d <- digit 
-                       return (Val(negDigitToInt(d)))
+                       return (Neg (Val (digitToInt d)))
                        ||| do v <- letter --negative variable
                               return (Neg (Var v))
              ||| do v <- letter

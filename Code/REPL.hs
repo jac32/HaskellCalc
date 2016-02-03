@@ -37,6 +37,7 @@ process :: State -> Command -> IO ()
 process st (Set var e) 
   = do let st' = addHistory st { vars  = updateVars var (toInt (eval (vars st) e)) (vars st) } (Set var e)
        repl st'
+       
 process st (Fetch e)
   = do let st' = st
        process st (getNthCommand st (toInt (eval (vars st') e)))
