@@ -81,11 +81,9 @@ pExpr = do t <- pTerm
 pFactor :: Parser Expr
 pFactor = do d <- integer
              return (Val d)
-             ||| do char '-' --negative numbers
-                    do d <- integer 
-                       return (Neg (Val d))
-                       ||| do v <- ident --negative variable
-                              return (Neg (Var v))
+             ||| do char '-'
+                    v <- identifier --negative variable
+                    return (Neg (Var v))
              ||| do v <- identifier
                     return (Var v)
                     ||| do char '('
