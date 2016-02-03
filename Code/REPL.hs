@@ -45,7 +45,7 @@ process st (Fetch e)
        
 process st (Eval e) 
   = do let st' = addHistory st (Eval e)
-       putStrLn(show (toInt (eval (vars st') e))) -- Print the result of evaluation
+       putStr(show (toInt (eval (vars st') e))) -- Print the result of evaluation
        repl st'
 
 -- Read, Eval, Print Loop
@@ -54,7 +54,7 @@ process st (Eval e)
 -- 'process' will call 'repl' when done, so the system loops.
 
 repl :: State -> IO ()
-repl st = do putStr (show (numCalcs st) ++ " > ")
+repl st = do putStr ("\n" ++ show (numCalcs st) ++ "> ")
              inp <- getLine
              handleInput st inp 
 
