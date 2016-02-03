@@ -10,7 +10,7 @@ data Expr = Add Expr Expr
   | Div Expr Expr
   | Neg Expr
   | Val Int
-  | Var Char
+  | Var Name
   deriving Show
 
 -- These are the REPL commands - set a variable name to a value, and evaluate
@@ -27,7 +27,7 @@ eval vars (Val x) = Just x    -- for values, just give the value directly
 
 --retrieve the value corresponding with the name v (if present) in the vars of the state
 --the list comprehension retrieves all name value pairs in vars where the name is equal to v
-eval vars (Var v) = Just (snd (head [(name, val) | (name, val) <- vars, name == [v]]))
+eval vars (Var v) = Just (snd (head [(name, val) | (name, val) <- vars, name == v]))
 
 eval vars (Neg e) = case (eval vars e) of
   (Just x) -> Just (-x)
@@ -60,10 +60,10 @@ pCommand :: Parser Command
 pCommand = do char '!'
               e <- pExpr
               return (Fetch e)
-              ||| do t <- letter --if variable
+              ||| do t <- identifier --if variable
                      char '='
                      e <- pExpr
-                     return (Set [t] e) --Set t to e, and store in vars in the state
+                     return (Set t e) --Set t to e, and store in vars in the state
                      ||| do e <- pExpr
                             return (Eval e)
 
@@ -84,9 +84,9 @@ pFactor = do d <- digit
              ||| do char '-' --negative numbers
                     do d <- digit 
                        return (Neg (Val (digitToInt d)))
-                       ||| do v <- letter --negative variable
+                       ||| do v <- ident --negative variable
                               return (Neg (Var v))
-             ||| do v <- letter
+             ||| do v <- ident
                     return (Var v)
                     ||| do char '('
                            e <- pExpr
