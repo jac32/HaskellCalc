@@ -79,11 +79,11 @@ pExpr = do t <- pTerm
 
 
 pFactor :: Parser Expr
-pFactor = do d <- digit
-             return (Val (digitToInt d))
+pFactor = do d <- integer
+             return (Val d)
              ||| do char '-' --negative numbers
-                    do d <- digit 
-                       return (Neg (Val (digitToInt d)))
+                    do d <- integer 
+                       return (Neg (Val d))
                        ||| do v <- ident --negative variable
                               return (Neg (Var v))
              ||| do v <- ident
