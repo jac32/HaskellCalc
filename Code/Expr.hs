@@ -35,7 +35,7 @@ eval vars (Val x) = Just x    -- for values, just give the value directly
 eval vars (Var v) = Just (snd (head [(name, val) | (name, val) <- vars, name == v]))
 
 eval vars (Neg e) = case (eval vars e) of
-  (Just x) -> Just (subV (toValue((eval vars (Val (I 0))))) (x))
+  (Just x) -> Just (mulV (toValue((eval vars (Val (I (-1)))))) (x))
   _-> Nothing
 
 --performs addition, subtraction, multiplication, and division if 
@@ -56,9 +56,6 @@ eval vars (Div x y) = case (eval vars x, eval vars y) of
   (Just x', Just y') -> Just (divV (x') (y'))
   _ -> Nothing
 
-
-digitToInt :: Char -> Int
-digitToInt x = fromEnum x - fromEnum '0'
 
 --top of parse tree
 pCommand :: Parser Command
@@ -89,8 +86,8 @@ pFactor = do d <- float
              ||| do d <- integer
                     return (Val (I d))
              ||| do character '-'
-                    v <- identifier--negative variable
-                    return (Neg (Var v))
+                    e <- pFactor --negative expressions
+                    return (Neg (e))
              ||| do v <- identifier
                     return (Var v)
                     ||| do character '('
