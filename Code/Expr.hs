@@ -57,11 +57,11 @@ digitToInt x = fromEnum x - fromEnum '0'
 
 --top of parse tree
 pCommand :: Parser Command
-pCommand = do char '!'
+pCommand = do character '!'
               e <- pExpr
               return (Fetch e)
               ||| do t <- identifier --if variable
-                     char '='
+                     character '='
                      e <- pExpr
                      return (Set t e) --Set t to e, and store in vars in the state
                      ||| do e <- pExpr
@@ -69,10 +69,10 @@ pCommand = do char '!'
 
 pExpr :: Parser Expr
 pExpr = do t <- pTerm
-           do char '+'
+           do character '+'
               e <- pExpr
               return (Add t e)
-              ||| do char '-'
+              ||| do character '-'
                      e <- pExpr
                      return (Sub t e)
               ||| return t
@@ -81,23 +81,23 @@ pExpr = do t <- pTerm
 pFactor :: Parser Expr
 pFactor = do d <- integer
              return (Val d)
-             ||| do char '-'
+             ||| do character '-'
                     v <- identifier --negative variable
                     return (Neg (Var v))
              ||| do v <- identifier
                     return (Var v)
-                    ||| do char '('
+                    ||| do character '('
                            e <- pExpr
-                           char ')'
+                           character ')'
                            return e
 
 --gets called in pExpr, to indicate precedence for mult and div               
 pTerm :: Parser Expr 
 pTerm = do f <- pFactor
-           do char '*'
+           do character '*'
               t <- pTerm
               return (Mult f t)
-              ||| do char '/'
+              ||| do character '/'
                      t <- pTerm
                      return (Div f t)
               ||| return f
