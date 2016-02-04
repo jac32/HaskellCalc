@@ -30,7 +30,7 @@ dropVar name vars = [(n,v) | (n,v) <- vars, name /= n]
 
 
 {-| REDUNDANT Fetches the nth command from the state's command history
-The indexing matches the prompt number printed in the repl when the
+The indexing matches the prompt number printed in the prompt when the
 command was originally entered. i.e., The first command entered is
 n = 0. This is just the most common use of 'getNthFromList'
 -}
@@ -58,7 +58,7 @@ process st (Set var e)
   = do let st' = addHistory st {
              vars  = updateVars var (toInt (eval (vars st) e)) (vars st)
              } (Set var e)
-       repl st'
+       prompt st'
        
 process st (Fetch e)
   = do let st' = st
@@ -68,35 +68,51 @@ process st (Fetch e)
 process st (Eval e) 
   = do let st' = addHistory st (Eval e)
        putStr(show (toInt (eval (vars st') e))) -- Print the result of evaluation
-       repl st'
-{-|
-Read, Eval, Print Loop
+       prompt st'
+
+       
+{-| Helper function for the main REPL.
+Prints prompt with current calculation count and retrieves the users input
+Removes clutter from 'repl'
+-}
+prompt :: State -> IO ()
+prompt st = do putStr ("\n" ++ show (numCalcs st) ++ "> ")
+               inp <- getLine
+               repl st inp 
+
+
+{-| Read, Eval, Print Loop
 This reads and parses the input using the pCommand parser, and calls
 'process' to process the command.
-'process' will call 'repl' when done, so the system loops.
+'process' will call 'prompt' when done, so the system loops. 
+
+Before sending the input to be parsed/processed, the input is checked for
+user specified operations. These start with ':' and provide different
+services to the user.
+
+All currently available operations:
+
+":q" - Quit REPL
+":h" - Display help information (to be implemented)
+":f FILE_ADDRESS" - Read in and execute commands from a specified file
+(to be implemented)
+
 -}
-repl :: State -> IO ()
-repl st = do putStr ("\n" ++ show (numCalcs st) ++ "> ")
-             inp <- getLine
-             handleInput st inp 
-
-
-
-handleInput :: State -> String -> IO ()
-handleInput st inp 
+repl :: State -> String -> IO ()
+repl st inp 
   | head inp /= ':' =
       case parse pCommand inp of
         [(cmd, "")] -> -- Must parse entire input
           process st cmd
         _ -> do putStrLn "Parse error"
-                repl st
+                prompt st
   | op == 'h' = do printHelp
-                   repl st
-  | op == 'e' = do executeFile st arg
-                   repl st
+                   prompt st
+  | op == 'f' = do executeFile st arg
+                   prompt st
   | op == 'q' = putStrLn "Bye!"
   | otherwise = do putStrLn "Not a recognised command"
-                   repl st
+                   prompt st
   where
     op = head (tail inp)
     arg = (words inp) !! 1
