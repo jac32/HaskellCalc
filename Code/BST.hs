@@ -48,3 +48,14 @@ This is useful for deleting roots like in 'delete'
 smallestNode :: Ord a => Tree a -> a
 smallestNode (Tree a Empty _) = a
 smallestNode (Tree _ sub _) = smallestNode sub
+
+{-| Checks a tree for the presence of the given value
+True if tree contains a node of the given value
+otherwise False
+-}
+contains :: Ord a => a -> Tree a -> Bool
+contains x Empty = False
+contains x (Tree node l r) = case compare x node of
+  EQ -> True
+  GT -> (contains x r)
+  LT -> (contains x l)
