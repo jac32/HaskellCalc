@@ -59,7 +59,7 @@ process st (Fetch e)
        
 process st (Eval e) 
   = do let st' = addHistory st (Eval e)
-       putStr(show (toInt (eval (vars st') e))) -- Print the result of evaluation
+       putStr(drop 2 (show (toValue (eval (vars st') e)))) -- Print the result of evaluation
        prompt st'
 
        
