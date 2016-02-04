@@ -11,6 +11,9 @@ data Expr = Add Expr Expr
   | Mult Expr Expr
   | Div Expr Expr
   | Neg Expr
+  | Abs Expr
+  | Pow Expr Expr
+  | Mod Expr Expr
   | Val Value
   | Var Name
   deriving Show
@@ -37,6 +40,21 @@ eval vars (Var v) = Just (snd (head [(name, val) | (name, val) <- vars, name == 
 eval vars (Neg e) = case (eval vars e) of
   (Just x) -> Just (mulV (toValue((eval vars (Val (I (-1)))))) (x))
   _-> Nothing
+
+--performs absolute value, power, and modulo if eval vars x and 
+--eval vars y both return Just Ints, and not Nothing
+eval vars (Abs e) = case (eval vars e) of
+  (Just x) -> Just (absV x) 
+  _ -> Nothing
+
+eval vars (Pow x y) = case (eval vars x, eval vars y) of
+  (Just x', Just y') -> Just (powV x' y')
+  _ -> Nothing
+
+eval vars (Mod x y) = case (eval vars x, eval vars y) of
+  (Just x', Just y') -> Just (modV x' y')
+  _ -> Nothing
+
 
 --performs addition, subtraction, multiplication, and division if 
 --eval vars x and eval vars y return a Just int, and not Nothing
@@ -94,15 +112,24 @@ pFactor = do d <- float
                            e <- pExpr
                            character ')'
                            return e
-
+                    ||| do character '|'
+                           e <- pExpr
+                           character '|'
+                           return (Abs e)
 --gets called in pExpr, to indicate precedence for mult and div               
 pTerm :: Parser Expr 
 pTerm = do f <- pFactor
-           do character '*'
-              t <- pTerm
-              return (Mult f t)
+           do character '^'
+              t <- pExpr
+              return (Pow f t)
+              ||| do character '*'
+                     t <- pTerm
+                     return (Mult f t)
               ||| do character '/'
                      t <- pTerm
                      return (Div f t)
+              ||| do character '%'
+                     t <- pTerm
+                     return (Mod f t)
               ||| return f
 
