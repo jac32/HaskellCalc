@@ -11,6 +11,7 @@ data Expr = Add Expr Expr
   | Mult Expr Expr
   | Div Expr Expr
   | Neg Expr
+  | Abs Expr
   | Val Value
   | Var Name
   deriving Show
@@ -37,6 +38,11 @@ eval vars (Var v) = Just (snd (head [(name, val) | (name, val) <- vars, name == 
 eval vars (Neg e) = case (eval vars e) of
   (Just x) -> Just (mulV (toValue((eval vars (Val (I (-1)))))) (x))
   _-> Nothing
+
+
+eval vars (Abs e) = case (eval vars e) of
+  (Just x) -> Just (absV x) 
+  _ -> Nothing
 
 --performs addition, subtraction, multiplication, and division if 
 --eval vars x and eval vars y return a Just int, and not Nothing
@@ -94,7 +100,10 @@ pFactor = do d <- float
                            e <- pExpr
                            character ')'
                            return e
-
+                    ||| do character '|'
+                           e <- pExpr
+                           character '|'
+                           return (Abs e)
 --gets called in pExpr, to indicate precedence for mult and div               
 pTerm :: Parser Expr 
 pTerm = do f <- pFactor

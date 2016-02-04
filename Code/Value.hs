@@ -28,6 +28,13 @@ mulV (I x) (Dec y)               = Dec (y*(fromIntegral(x)))
 
 divV                             :: Value -> Value -> Value 
 divV (I x) (I y)                 = I (x `div` y)
-divV (Dec x) (Dec y)                 = Dec (x/y)
+divV (Dec x) (Dec y)             = Dec (x/y)
 divV (Dec x) (I y)               = Dec (x/(fromIntegral(y))) 
 divV (I x) (Dec y)               = Dec ((fromIntegral(x))/y) 
+
+absV                             :: Value -> Value
+absV (I x)                       | x < 0       = (I (-x))
+                                 | otherwise   = (I x)
+
+absV (Dec x)                     | x < 0       = (Dec (-x))
+                                 | otherwise   = (Dec x)
