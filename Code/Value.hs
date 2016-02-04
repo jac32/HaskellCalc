@@ -1,11 +1,13 @@
 module Value where
 
+
+
 data Value = I Int
   | F Float
   deriving Show
 
 
-
+--Addition, Subtraction, Multiplication, Division for floats and integers
 addV                             :: Value -> Value -> Value
 addV (I x) (I y)                 = I(x+y)
 addV (F x) (F y)                 = F (x+y)
@@ -32,9 +34,31 @@ divV (F x) (F y)                 = F (x/y)
 divV (F x) (I y)                 = F (x/(fromIntegral(y))) 
 divV (I x) (F y)                 = F ((fromIntegral(x))/y) 
 
+------------------------------------------------------------
+--Absolute Value function for floats and ints
 absV                             :: Value -> Value
 absV (I x)                       | x < 0       = (I (-x))
                                  | otherwise   = (I x)
 
-absV (F x)                     | x < 0       = (F (-x))
+absV (F x)                       | x < 0       = (F (-x))
                                  | otherwise   = (F x)
+
+--------------------------------------------------------------
+--Power function for floats and ints -- Negative exponents and float exponents not supported
+powV                             :: Value -> Value -> Value
+powV (I x) (I y)                 | y > 0       =  (I (x^y))  
+                                 | y < 0       =  (F ((fromIntegral(x))^(fromIntegral(y))))
+                                 | otherwise   =  (I 1)
+    
+powV (F x) (I y)                 | y == 0      =  (I 1)
+                                 | otherwise   =  (F (x^(fromIntegral(y))))
+
+
+--------------------------------------------------------------
+--Mod function. Only works with integers. 
+
+modV                             :: Value -> Value -> Value
+modV (I x) (I y)                 = I(x `mod` y)
+
+
+                        
