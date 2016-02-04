@@ -1,6 +1,7 @@
 module Expr where
 
 import Parsing
+import Value
 
 type Name = String
 
@@ -9,7 +10,7 @@ data Expr = Add Expr Expr
   | Mult Expr Expr
   | Div Expr Expr
   | Neg Expr
-  | Val Int
+  | Val Value
   | Var Name
   deriving Show
 
@@ -20,35 +21,35 @@ data Command = Set Name Expr
   | Fetch Expr
   deriving Show
 
-eval :: [(Name, Int)] ->      -- Variable name to value mapping
+eval :: [(Name,Value)] ->      -- Variable name to value mapping
         Expr ->               -- Expression to evaluate
-        Maybe Int             -- Result (if no errors such as missing variables)
+        Maybe Value             -- Result (if no errors such as missing variables)
 eval vars (Val x) = Just x    -- for values, just give the value directly
 
 --retrieve the value corresponding with the name v (if present) in the vars of the state
 --the list comprehension retrieves all name value pairs in vars where the name is equal to v
 eval vars (Var v) = Just (snd (head [(name, val) | (name, val) <- vars, name == v]))
 
-eval vars (Neg e) = case (eval vars e) of
-  (Just x) -> Just (-x)
-  _-> Nothing
+--eval vars (Neg e) = case (eval vars e) of
+--  (Just x) -> Just (subV (Val 0) x)
+--  _-> Nothing
 
 --performs addition, subtraction, multiplication, and division if 
 --eval vars x and eval vars y return a Just int, and not Nothing
 eval vars (Add x y) =  case (eval vars x, eval vars y) of
-  (Just x', Just y') -> Just (x' + y')
+  (Just x', Just y') -> Just(addV (x') (y')) 
   _ -> Nothing
 
 eval vars (Sub x y) =  case (eval vars x, eval vars y) of
-  (Just x', Just y') -> Just (x' - y')
+  (Just x', Just y') -> Just (subV (x') (y'))
   _ -> Nothing
   
 eval vars (Mult x y) = case (eval vars x, eval vars y) of
-  (Just x', Just y') -> Just (x' * y')
+  (Just x', Just y') -> Just (mulV (x') (y'))
   _ -> Nothing
 
 eval vars (Div x y) = case (eval vars x, eval vars y) of
-  (Just x', Just y') -> Just (x' `div` y')
+  (Just x', Just y') -> Just (divV (x') (y'))
   _ -> Nothing
 
 
@@ -79,8 +80,10 @@ pExpr = do t <- pTerm
 
 
 pFactor :: Parser Expr
-pFactor = do d <- integer
-             return (Val d)
+pFactor = do d <- float
+             return (Val  (Dec d))
+             ||| do d <- integer
+                    return (Val (I d))
              ||| do character '-'
                     v <- identifier --negative variable
                     return (Neg (Var v))

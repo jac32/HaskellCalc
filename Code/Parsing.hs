@@ -9,11 +9,7 @@ module Parsing where
 
 import Data.Char
 import Control.Monad
-
-data Value = Int
-  | Float
-  deriving Show
-
+import Value
 
 infixr 5 |||
 
@@ -116,7 +112,7 @@ flt                           = do char '-'
                                    char '.'
                                    ys <- many1 digit
                                    return (read (xs++('.':ys))) :: Parser Float
-                                   ||| do xs <- many1 digit
+                                   ||| do xs <- many1 digit 
                                           char '.'
                                           ys <- many1 digit
                                           return(read (xs++('.':ys))) :: Parser Float
@@ -159,10 +155,10 @@ float                         :: Parser Float
 float                         = token flt
 
 --number                        :: Value  
---number (Decimal n)            = do d <- float
---                                   return d
---number (Integer n)            = do d <- integer
---                                   return d
+--number                        = do d <- float
+ --                                  return d
+  --                                 ||| do d <- integer
+    --                                      return d
 
 symbol                        :: String -> Parser String
 symbol xs                     =  token (string xs)

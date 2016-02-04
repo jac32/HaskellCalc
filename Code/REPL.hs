@@ -2,12 +2,12 @@ module REPL where
 
 import Expr
 import Parsing
-
+import Value
 
 {-| Stores the current state of the system
 Tracks command history, variable values and total number of calculations
 -}
-data State = State { vars :: [(Name, Int)],
+data State = State { vars :: [(Name, Value)],
                      numCalcs :: Int,
                      history :: [Command] }
 
@@ -20,12 +20,12 @@ Searches the variable list for the given name then adds the
 name value pair. If the name is already in the list then it is
 simply dropped.
 -}
-updateVars :: Name -> Int -> [(Name,Int)] -> [(Name,Int)]
+updateVars :: Name -> Value -> [(Name,Value)] -> [(Name,Value)]
 updateVars name value vars = (name, value) : dropVar name vars
 
 
 -- | Removes the given name and matching value from the list of variables
-dropVar :: Name -> [(Name,Int)] -> [(Name,Int)]
+dropVar :: Name -> [(Name,Value)] -> [(Name,Value)]
 dropVar name vars = [(n,v) | (n,v) <- vars, name /= n] 
 
 -- Add a command to the command history in the state
@@ -34,7 +34,7 @@ addHistory state command = state { numCalcs = (numCalcs state)  + 1,
                                    history = (history state) ++ [command] }
 
 -- | HACK: Converts maybe Ints to ints 
-toInt :: (Maybe Int) -> Int
+toInt :: (Maybe Value) -> Value
 toInt (Just x) = x
 toInt Nothing = undefined
 
@@ -53,7 +53,7 @@ process st (Set var e)
        
 process st (Fetch e)
   = do let st' = st
-       process st ((history st) !! (toInt (eval (vars st') e)))
+       process st ((history st) !! 2)--(toInt (eval (vars st') e)))
            -- st' should include the variable set to the result of evaluating
        
 process st (Eval e) 
