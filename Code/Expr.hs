@@ -82,7 +82,7 @@ pExpr = do t <- pTerm
 
 pFactor :: Parser Expr
 pFactor = do d <- float
-             return (Val  (Dec d))
+             return (Val  (F d))
              ||| do d <- integer
                     return (Val (I d))
              ||| do character '-'
