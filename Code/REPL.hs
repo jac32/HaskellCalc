@@ -28,15 +28,6 @@ updateVars name value vars = (name, value) : dropVar name vars
 dropVar :: Name -> [(Name,Int)] -> [(Name,Int)]
 dropVar name vars = [(n,v) | (n,v) <- vars, name /= n] 
 
-
-{-| REDUNDANT Fetches the nth command from the state's command history
-The indexing matches the prompt number printed in the prompt when the
-command was originally entered. i.e., The first command entered is
-n = 0. This is just the most common use of 'getNthFromList'
--}
-getNthCommand :: State -> Int -> Command
-getNthCommand st n = (history st) !! n
-
 -- Add a command to the command history in the state
 addHistory :: State -> Command -> State
 addHistory state command = state { numCalcs = (numCalcs state)  + 1,
@@ -117,6 +108,7 @@ repl st inp
     op = head (tail inp)
     arg = (words inp) !! 1
     
+
 
 executeFile :: State -> String -> IO ()
 executeFile st adr = do contents <- readFile adr
