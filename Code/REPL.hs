@@ -3,30 +3,31 @@ module REPL where
 import Expr
 import Parsing
 import Value
+import BST
 
 {-| Stores the current state of the system
 Tracks command history, variable values and total number of calculations
 -}
-data State = State { vars :: [(Name, Value)],
+data State = State { vars :: Tree (Name, Value),
                      numCalcs :: Int,
                      history :: [Command] }
 
 -- | Initial system state used for initialising the REPL
 initState :: State
-initState = State [] 0 []
+initState = State Empty 0 []
 
 {-| Updates the variable list with the given name value pair
 Searches the variable list for the given name then adds the
 name value pair. If the name is already in the list then it is
 simply dropped.
 -}
-updateVars :: Name -> Value -> [(Name,Value)] -> [(Name,Value)]
-updateVars name value vars = (name, value) : dropVar name vars
+updateVars :: Name -> Value -> Tree (Name,Value) -> Tree (Name,Value)
+updateVars name value vars = insert (name, value) vars
 
 
 -- | Removes the given name and matching value from the list of variables
-dropVar :: Name -> [(Name,Value)] -> [(Name,Value)]
-dropVar name vars = [(n,v) | (n,v) <- vars, name /= n] 
+dropVar :: Name -> Tree (Name,Value) -> Tree (Name,Value)
+dropVar name vars = remove name vars
 
 -- Add a command to the command history in the state
 addHistory :: State -> Command -> State

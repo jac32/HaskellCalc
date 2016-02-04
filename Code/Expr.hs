@@ -2,7 +2,7 @@ module Expr where
 
 import Parsing
 import Value
-
+import BST
 
 type Name = String
 
@@ -28,14 +28,14 @@ data Command = Set Name Expr
 toValue :: Maybe Value -> Value
 toValue (Just x) = x
 
-eval :: [(Name,Value)] ->      -- Variable name to value mapping
+eval :: Tree (Name,Value) ->      -- Variable name to value mapping
         Expr ->               -- Expression to evaluate
         Maybe Value             -- Result (if no errors such as missing variables)
 eval vars (Val x) = Just x    -- for values, just give the value directly
 
 --retrieve the value corresponding with the name v (if present) in the vars of the state
 --the list comprehension retrieves all name value pairs in vars where the name is equal to v
-eval vars (Var v) = Just (snd (head [(name, val) | (name, val) <- vars, name == v]))
+eval vars (Var v) = Just (valOf v vars)
 
 eval vars (Neg e) = case (eval vars e) of
   (Just x) -> Just (mulV (toValue((eval vars (Val (I (-1)))))) (x))

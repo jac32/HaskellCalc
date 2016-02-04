@@ -13,12 +13,20 @@ the nodes it traverses to find the insertion point
 -}
 insert :: Ord n => (n,v) -> Tree (n,v) -> Tree (n,v)
 insert (n,v) Empty = Tree (n,v) Empty Empty
-insert (n,v) (Tree node l r) =
-  case compare n (fst node) of
+insert (n,v) (Tree node l r) = case compare n (fst node) of
   EQ -> Tree (n,v) l r
   LT -> Tree node (insert (n,v) l) r
   GT -> Tree node l (insert (n,v) r)
-   
+
+valOf :: Ord n => n -> Tree (n,v) -> v
+valOf n Empty = undefined
+valOf n (Tree node l r) = case compare n (fst node) of
+  EQ -> snd node
+  LT -> valOf n l
+  GT -> valOf n r
+  
+
+    
 {-| Removes a specified node from the tree 
 Traverses the tree to find the node to be removed
 If there is an empty subtree then the removal is simple
