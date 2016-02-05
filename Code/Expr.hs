@@ -104,7 +104,7 @@ pCommand = do character '#'
                             return (Eval e)
 
 pExpr :: Parser Expr
-pExpr = do b <- pBool
+pExpr = do b <- pLogExpr
            return b
            ||| do t <- pTerm
                   do character '+'
@@ -122,11 +122,17 @@ pBool = do symbol "!"
            return (Not (Val(B b)))
            ||| do b <- bool
                   return (Val (B b))
+
            
-
-
-
-
+pLogExpr :: Parser Expr
+pLogExpr = do b1 <- pBool
+              do symbol "||"
+                 b2 <- pLogExpr
+                 return (Or b1 b2)
+                 ||| do symbol "&&"
+                        b2 <- pLogExpr
+                        return (And b1 b2)
+                 ||| return b1
 
 
 
