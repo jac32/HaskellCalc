@@ -126,12 +126,12 @@ pBool = do symbol "!"
            
 pLogExpr :: Parser Expr
 pLogExpr = do b1 <- pBool
-              do symbol "||"
+              do symbol "&&"
                  b2 <- pLogExpr
-                 return (Or b1 b2)
-                 ||| do symbol "&&"
+                 return (And b1 b2)
+                 ||| do symbol "||"
                         b2 <- pLogExpr
-                        return (And b1 b2)
+                        return (Or b1 b2)
                  ||| return b1
 
 
