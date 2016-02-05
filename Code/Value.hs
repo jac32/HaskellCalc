@@ -59,7 +59,7 @@ absV (I x)                       | x < 0       = (I (-x))
 
 absV (F x)                       | x < 0       = (F (-x))
                                  | otherwise   = (F x)
-
+absV _                           = undefined
 --------------------------------------------------------------
 --Power function for floats and ints -- Negative exponents and float exponents not supported
 powV                             :: Value -> Value -> Value
@@ -69,13 +69,13 @@ powV (I x) (I y)                 | y > 0       =  (I (x^y))
     
 powV (F x) (I y)                 | y == 0      =  (I 1)
                                  | otherwise   =  (F (x^(fromIntegral(y))))
-
+powV _ _                         = undefined
 
 --------------------------------------------------------------
 --Mod function. Only works with integers. 
 
 modV                             :: Value -> Value -> Value
 modV (I x) (I y)                 = I(x `mod` y)
-
+modV _ _                         = undefined
 
                         
