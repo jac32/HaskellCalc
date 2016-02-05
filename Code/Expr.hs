@@ -122,7 +122,10 @@ pBool = do symbol "!"
            return (Not (Val(B b)))
            ||| do b <- bool
                   return (Val (B b))
-
+           ||| do character '('
+                  b <- pLogExpr
+                  character ')'
+                  return b
            
 pLogExpr :: Parser Expr
 pLogExpr = do b1 <- pBool
@@ -132,6 +135,7 @@ pLogExpr = do b1 <- pBool
                  ||| do symbol "||"
                         b2 <- pLogExpr
                         return (Or b1 b2)
+                        
                  ||| return b1
 
 
