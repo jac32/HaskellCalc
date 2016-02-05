@@ -34,10 +34,10 @@ addHistory :: State -> Command -> State
 addHistory state command = state { numCalcs = (numCalcs state)  + 1,
                                    history = (history state) ++ [command] }
 
--- | HACK: Converts maybe Ints to ints 
-toInt :: (Maybe Value) -> Value
-toInt (Just x) = x
-toInt Nothing = undefined
+-- | HACK: Converts values to ints
+valToInt :: Value -> Int
+valToInt (I x) =  x
+valToInt _ = undefined
 
 {-| Performs the correct action for the entered commmand in a given state
 3 main commands to be processed:
@@ -48,13 +48,13 @@ toInt Nothing = undefined
 process :: State -> Command -> IO ()
 process st (Set var e) 
   = do let st' = addHistory st {
-             vars  = updateVars var (toInt (eval (vars st) e)) (vars st)
+             vars  = updateVars var (toValue (eval (vars st) e)) (vars st)
              } (Set var e)
        prompt st'
        
 process st (Fetch e)
   = do let st' = st
-       process st ((history st) !! 2)--(toInt (eval (vars st') e)))
+       process st ((history st) !!valToInt(toValue (eval (vars st') e)))
            -- st' should include the variable set to the result of evaluating
        
 process st (Eval e) 
