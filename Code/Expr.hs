@@ -118,10 +118,12 @@ pExpr = do b <- pLogExpr
 
 pBool :: Parser Expr
 pBool = do symbol "!"
-           b <- bool
-           return (Not (Val(B b)))
+           b <- pBool
+           return (Not b)
            ||| do b <- bool
                   return (Val (B b))
+           ||| do i <- identifier
+                  return (Var i)
            ||| do character '('
                   b <- pLogExpr
                   character ')'
@@ -137,13 +139,6 @@ pLogExpr = do b1 <- pBool
                         return (Or b1 b2)
                         
                  ||| return b1
-
-
-
-
--- pBool :: Parser Expr
--- pBool = do b <- bool
---            return (Val (B b))
            
 
 pFactor :: Parser Expr
