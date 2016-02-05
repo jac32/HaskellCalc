@@ -4,6 +4,7 @@ module Value where
 
 data Value = I Int
   | F Float
+  | B Bool
   deriving Show
 
 
@@ -34,6 +35,21 @@ divV (I x) (I y)                 = I (x `div` y)
 divV (F x) (F y)                 = F (x/y)
 divV (F x) (I y)                 = F (x/(fromIntegral(y))) 
 divV (I x) (F y)                 = F ((fromIntegral(x))/y) 
+------------------------------------------------------------
+-- Boolean function definitions
+
+notV                             :: Value -> Value
+notV x                           = B (!x)
+not _                            = undefined
+
+andV                             :: Value -> Value -> Value
+andV (B x) (B y)                 = B (x && y)
+andV _ _                         = undefined
+
+orV                              :: Value -> Value -> Value
+orV (B x) (B y)                  = B (x || y)
+orV  _ _                         = undefined
+
 
 ------------------------------------------------------------
 --Absolute Value function for floats and ints
