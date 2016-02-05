@@ -39,8 +39,8 @@ divV (I x) (F y)                 = F ((fromIntegral(x))/y)
 -- Boolean function definitions
 
 notV                             :: Value -> Value
-notV x                           = B (!x)
-not _                            = undefined
+notV (B x)                        = B (not x)
+notV _                            = undefined
 
 andV                             :: Value -> Value -> Value
 andV (B x) (B y)                 = B (x && y)
