@@ -111,7 +111,7 @@ flt                           = do char '-'
                                    xs <- many1 digit
                                    char '.'
                                    ys <- many1 digit
-                                   return (read (xs++('.':ys))) :: Parser Float
+                                   return (read (('-':xs)++('.':ys))) :: Parser Float
                                    ||| do xs <- many1 digit 
                                           char '.'
                                           ys <- many1 digit
