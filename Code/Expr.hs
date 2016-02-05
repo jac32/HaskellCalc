@@ -14,6 +14,9 @@ data Expr = Add Expr Expr
   | Abs Expr
   | Pow Expr Expr
   | Mod Expr Expr
+  | And Expr Expr
+  | Or Expr Expr
+  | Not Expr
   | Val Value
   | Var Name
   deriving Show
@@ -74,7 +77,20 @@ eval vars (Div x y) = case (eval vars x, eval vars y) of
   (Just x', Just y') -> Just (divV (x') (y'))
   _ -> Nothing
 
+--- Bool operation evaluations
+eval vars (Not e) = case (eval vars e) of
+  (Just x) -> Just (notV x) 
+  _ -> Nothing
 
+eval vars (And x y) = case (eval vars x, eval vars y) of
+  (Just x', Just y') -> Just (andV x' y')
+  _ -> Nothing
+
+eval vars (Or x y) = case (eval vars x, eval vars y) of
+  (Just x', Just y') -> Just (orV x' y')
+  _ -> Nothing
+
+  
 --top of parse tree
 pCommand :: Parser Command
 pCommand = do character '!'
@@ -88,15 +104,37 @@ pCommand = do character '!'
                             return (Eval e)
 
 pExpr :: Parser Expr
-pExpr = do t <- pTerm
-           do character '+'
-              e <- pExpr
-              return (Add t e)
-              ||| do character '-'
+pExpr = do b <- pBool
+           return b
+           ||| do t <- pTerm
+                  do character '+'
                      e <- pExpr
-                     return (Sub t e)
-              ||| return t
+                     return (Add t e)
+                     ||| do character '-'
+                            e <- pExpr
+                            return (Sub t e)
+                     ||| return t
 
+
+-- pBool :: Parser Expr
+-- pBool = do symbol "!"
+--            b <- bool
+--            return (Not (B b))
+--            ||| 
+           
+           
+
+
+
+
+
+
+
+
+pBool :: Parser Expr
+pBool = do b <- bool
+           return (Val (B b))
+           
 
 pFactor :: Parser Expr
 pFactor = do d <- float

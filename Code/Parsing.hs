@@ -158,7 +158,13 @@ float                         = token flt
 --number                        = do d <- float
  --                                  return d
   --                                 ||| do d <- integer
-    --                                      return d
+    --return d
 
 symbol                        :: String -> Parser String
 symbol xs                     =  token (string xs)
+
+bool                          :: Parser Bool
+bool                          = do b <- symbol "True"
+                                   return True
+                                   ||| do b <- symbol "False"
+                                          return False
