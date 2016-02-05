@@ -93,7 +93,7 @@ eval vars (Or x y) = case (eval vars x, eval vars y) of
   
 --top of parse tree
 pCommand :: Parser Command
-pCommand = do character '!'
+pCommand = do character '#'
               e <- pExpr
               return (Fetch e)
               ||| do t <- identifier --if variable
@@ -116,24 +116,24 @@ pExpr = do b <- pBool
                      ||| return t
 
 
--- pBool :: Parser Expr
--- pBool = do symbol "!"
---            b <- bool
---            return (Not (B b))
---            ||| 
-           
-           
-
-
-
-
-
-
-
-
 pBool :: Parser Expr
-pBool = do b <- bool
-           return (Val (B b))
+pBool = do symbol "!"
+           b <- bool
+           return (Not (Val(B b)))
+           ||| do b <- bool
+                  return (Val (B b))
+           
+
+
+
+
+
+
+
+
+-- pBool :: Parser Expr
+-- pBool = do b <- bool
+--            return (Val (B b))
            
 
 pFactor :: Parser Expr
