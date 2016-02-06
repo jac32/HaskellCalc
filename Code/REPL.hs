@@ -4,7 +4,7 @@ import Expr
 import Parsing
 import Value
 import BST
-
+import Command
 {-| Stores the current state of the system
 Tracks command history, variable values and total number of calculations
 -}
