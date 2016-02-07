@@ -1,16 +1,17 @@
 module REPL where
 
-import Expr
+import Statement
 import Parsing
 import Value
+import Eval
 import BST
-import Command
+
 {-| Stores the current state of the system
 Tracks command history, variable values and total number of calculations
 -}
 data State = State { vars :: Tree (Name, Value),
                      numCalcs :: Int,
-                     history :: [Command] }
+                     history :: [Stmt] }
 
 -- | Initial system state used for initialising the REPL
 initState :: State
@@ -30,7 +31,7 @@ dropVar :: Name -> Tree (Name,Value) -> Tree (Name,Value)
 dropVar name vars = remove name vars
 
 -- Add a command to the command history in the state
-addHistory :: State -> Command -> State
+addHistory :: State -> Stmt -> State
 addHistory state command = state { numCalcs = (numCalcs state)  + 1,
                                    history = (history state) ++ [command] }
 
@@ -45,23 +46,26 @@ valToInt _ = undefined
 2. Fetching from history - Evaluate expression to find out which command to fetch and then execute
 3. Evaluate expression - Add the evaluation to the command history, evaluate the expression and print result before continuing with the REPL
 -}
-process :: State -> Command -> IO ()
-process st (Set var e) 
-  = do let st' = addHistory st {
-             vars  = updateVars var (toValue (eval (vars st) e)) (vars st)
-             } (Set var e)
-       prompt st'
+process :: State -> Stmt -> IO ()
+process st (ASet var e) = case (evalA (vars st) e) of
+  Right x -> do let st' = addHistory st {
+                      vars  = updateVars var x (vars st)
+                      } (ASet var e)
+                prompt st'
+  Left x -> do putStrLn x
+               prompt st
+
        
-process st (Fetch e)
-  = do let st' = st
-       process st ((history st) !!valToInt(toValue (eval (vars st') e)))
            -- st' should include the variable set to the result of evaluating
-       
-process st (Eval e) 
+process st (Eval e)
   = do let st' = addHistory st (Eval e)
-       putStr(drop 2 (show (toValue (eval (vars st') e)))) -- Print the result of evaluation
+       putStr(show (evalB (vars st') e)) -- Print the result of evaluation
        prompt st'
 
+
+-- process st x
+--   = do putStrLn (show x)
+--        prompt st
        
 {-| Helper function for the main REPL.
 Prints prompt with current calculation count and retrieves the users input
@@ -93,10 +97,12 @@ All currently available operations:
 repl :: State -> String -> IO ()
 repl st inp 
   | head inp /= ':' =
-      case parse pCommand inp of
+      case parse pStmt inp of
         [(cmd, "")] -> -- Must parse entire input
           process st cmd
-        _ -> do putStrLn "Parse error"
+        [(_, x)] -> do putStrLn ("Parse Error - remaining text: " ++ x)
+                       prompt st
+        x -> do putStrLn "Parse Error - Nothing could be parsed"
                 prompt st
   | op == 'h' = do printHelp
                    prompt st

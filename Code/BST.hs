@@ -18,10 +18,10 @@ insert (n,v) (Tree node l r) = case compare n (fst node) of
   LT -> Tree node (insert (n,v) l) r
   GT -> Tree node l (insert (n,v) r)
 
-valOf :: Ord n => n -> Tree (n,v) -> v
-valOf n Empty = undefined
+valOf :: Ord n => n -> Tree (n,v) -> Either String v
+valOf n Empty = Left "Value not found in tree"
 valOf n (Tree node l r) = case compare n (fst node) of
-  EQ -> snd node
+  EQ -> Right (snd node)
   LT -> valOf n l
   GT -> valOf n r
   

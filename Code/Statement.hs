@@ -5,7 +5,7 @@ import Value
 
 type Name = String
 
-data Stmt = Eval Expr
+data Stmt = Eval BExpr
   | ASet  Name  AExpr
   | BSet  Name  BExpr
   | If    BExpr Stmt
@@ -13,6 +13,7 @@ data Stmt = Eval Expr
   deriving Show
 
 data Expr = AE AExpr | BE BExpr deriving Show
+
 data BExpr = Const Bool
   | Not BExpr
   | BVar Name
@@ -23,11 +24,10 @@ data BExpr = Const Bool
   | Lt  AExpr AExpr
   deriving Show
 
-data AExpr = Var Name
-  | Val Value
+data AExpr = Val Value
+  | AVar Name
   | Neg AExpr
   | Abs AExpr
-  | AOp AExpr AExpr
   | Add AExpr AExpr
   | Sub AExpr AExpr
   | Mul AExpr AExpr
@@ -54,10 +54,10 @@ pStmt = do symbol "if"
                   symbol "="
                   v <- pBExpr
                   return (BSet n v)
-           ||| do e <- pBExpr
-                  return (Eval (BE e))
-           ||| do e <- pAExpr
-                  return (Eval (AE e))
+          ||| do e <- pBExpr
+                 return (Eval e)
+--           ||| do e <- pAExpr
+  --                return (Eval e)
                   
                  
 -- Code here could be simplified
@@ -81,6 +81,9 @@ pBTerm = do b <- bool
                    e <- pBExpr
                    symbol ")"
                    return e
+            ||| do symbol "!"
+                   e <-pBExpr
+                   return (Not e)
             ||| do v1 <- pAExpr
                    do symbol "<"
                       v2 <- pAExpr
@@ -91,8 +94,8 @@ pBTerm = do b <- bool
                       ||| do symbol ">"
                              v2 <- pAExpr
                              return (Gt v1 v2)
-            -- ||| do i <- identifier
-            --        return (BVar i)
+            ||| do i <- identifier
+                   return (BVar i)
 
 
                
@@ -105,7 +108,9 @@ pAExpr = do t <- pATerm
                       e <- pAExpr
                       return (Sub t e)
                ||| return t
-
+            ||| do s <- identifier
+                   return (Val (S s))
+                   
 pATerm :: Parser AExpr
 pATerm = do f <- pFactor 
             do symbol "*"
@@ -128,7 +133,7 @@ pFactor = do f <- float
                     e <- pFactor
                     return (Neg e)
              ||| do v <- identifier
-                    return (Var v)
+                    return (AVar v)
              ||| do symbol "("
                     e <- pAExpr
                     symbol ")"
