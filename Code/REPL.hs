@@ -57,11 +57,15 @@ process st (ASet var e) = case (evalA (vars st) e) of
 
        
            -- st' should include the variable set to the result of evaluating
-process st (Eval e)
-  = do let st' = addHistory st (Eval e)
+process st (BEval e)
+  = do let st' = addHistory st (BEval e)
        putStr(show (evalB (vars st') e)) -- Print the result of evaluation
        prompt st'
 
+process st (AEval e)
+  = do let st' = addHistory st (AEval e)
+       putStr(show (evalA (vars st') e)) -- Print the result of evaluation
+       prompt st'
 
 -- process st x
 --   = do putStrLn (show x)

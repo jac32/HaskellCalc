@@ -5,14 +5,13 @@ import Value
 
 type Name = String
 
-data Stmt = Eval BExpr
+data Stmt = AEval AExpr
+  | BEval BExpr
   | ASet  Name  AExpr
   | BSet  Name  BExpr
   | If    BExpr Stmt
   | While BExpr Stmt
   deriving Show
-
-data Expr = AE AExpr | BE BExpr deriving Show
 
 data BExpr = Const Bool
   | Not BExpr
@@ -55,9 +54,9 @@ pStmt = do symbol "if"
                   v <- pBExpr
                   return (BSet n v)
           ||| do e <- pBExpr
-                 return (Eval e)
---           ||| do e <- pAExpr
-  --                return (Eval e)
+                 return (BEval e)
+          ||| do e <- pAExpr
+                 return (AEval e)
                   
                  
 -- Code here could be simplified
