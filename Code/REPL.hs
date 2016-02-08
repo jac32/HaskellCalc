@@ -55,6 +55,14 @@ process st (ASet var e) = case (evalA (vars st) e) of
   Left x -> do putStrLn x
                prompt st
 
+
+process st (BSet var e) = case (evalB (vars st) e) of
+  Right x -> do let st' = addHistory st {
+                      vars = updateVars var x (vars st)
+                      } (BSet var e)
+                prompt st'
+  Left x -> do putStrLn x
+               prompt st
        
            -- st' should include the variable set to the result of evaluating
 process st (BEval e)
