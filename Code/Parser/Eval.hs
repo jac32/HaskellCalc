@@ -55,7 +55,7 @@ evalA vars (Mod x y)  = binFrame vars x y modV
 
 evalA vars (Pow x y)  = binFrame vars x y powV
 
-
+evalA vars (Abs x) = unFrame vars x absV
 
 -----------------------------------------------------------------
 -- Function Application Frames
