@@ -77,12 +77,28 @@ arithmeticPrecedenceTests = TestList $ map TestCase [
    (testParse "3*6+7")),
 
     -- Tests of multiplication over subtraction precedence 
-    (assertEqual "Multiplication over addition A"
+    (assertEqual "Multiplication over subtraction A"
    (Right (AEval (Sub (Val (I 3)) (Mul (Val (I 6)) (Val (I 7))))) :: Either String Stmt)
    (testParse "3-6*7")),
-  (assertEqual "Multiplication over addition B"
+  (assertEqual "Multiplication over subtraction B"
    (Right (AEval (Sub  (Mul (Val (I 3)) (Val (I 6))) (Val (I 7)))) :: Either String Stmt)
-   (testParse "3*6-7"))
+   (testParse "3*6-7")),
+
+    -- Tests of division over addition precedence 
+  (assertEqual "Division over addition A"
+   (Right (AEval (Add (Val (I 3)) (Div (Val (I 6)) (Val (I 7))))) :: Either String Stmt)
+   (testParse "3+6/7")),
+  (assertEqual "Division over addition B"
+   (Right (AEval (Add  (Div (Val (I 3)) (Val (I 6))) (Val (I 7)))) :: Either String Stmt)
+   (testParse "3/6+7")),
+
+    -- Tests of division over subtraction precedence 
+    (assertEqual "Division over subtraction A"
+   (Right (AEval (Sub (Val (I 3)) (Div (Val (I 6)) (Val (I 7))))) :: Either String Stmt)
+   (testParse "3-6/7")),
+  (assertEqual "Division over subtraction B"
+   (Right (AEval (Sub  (Div (Val (I 3)) (Val (I 6))) (Val (I 7)))) :: Either String Stmt)
+   (testParse "3/6-7"))
   ]  
 
   
