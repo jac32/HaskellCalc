@@ -88,6 +88,20 @@ process st (If cond stmt) = case (evalB (vars st) cond) of
   Right x -> putStrLn "If condition evaluated to non-Bool"
 
   Left x -> do putStrLn (show x)
+       
+           -- st' should include the variable set to the result of evaluating
+process st (BEval e) = do st' <- updateState st (BEval e)
+                          prompt st'
+ 
+ 
+process st (AEval e) = do st' <- updateState st (AEval e)
+                          prompt st'
+       
+
+
+
+
+
 
 process st (While cond stmt) = case (evalB (vars st) cond) of
   Right (B True) -> do st' <- updateState st stmt
@@ -100,15 +114,6 @@ process st (While cond stmt) = case (evalB (vars st) cond) of
   Left x -> do putStrLn (show x)
 
  
-       
-           -- st' should include the variable set to the result of evaluating
-process st (BEval e) = do st' <- updateState st (BEval e)
-                          prompt st'
- 
- 
-process st (AEval e) = do st' <- updateState st (AEval e)
-                          prompt st'
-       
 
 -- process st x
 --   = do putStrLn (show x)
