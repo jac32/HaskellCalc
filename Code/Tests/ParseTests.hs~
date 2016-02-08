@@ -1,0 +1,13 @@
+import Test.HUnit
+
+
+testParse :: String -> Stmt
+testParse x = case parse pStmt x of
+  [(cmd, "")] -> cmd
+  [(_, x)] -> x
+
+
+ = TestList $ map TestCase [
+  ]
+
+parseTests = []

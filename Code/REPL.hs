@@ -35,10 +35,30 @@ addHistory :: State -> Stmt -> State
 addHistory state command = state { numCalcs = (numCalcs state)  + 1,
                                    history = (history state) ++ [command] }
 
--- | HACK: Converts values to ints
-valToInt :: Value -> Int
-valToInt (I x) =  x
-valToInt _ = undefined
+updateState :: State -> Stmt -> IO State
+updateState st (AEval e) = do putStrLn(show (evalA (vars st) e))
+                              return (addHistory st (AEval e))
+                            
+       
+updateState st (BEval e) = do putStr(show (evalB (vars st) e))
+                              return (addHistory st (BEval e))
+
+updateState st (ASet var e) = case (evalA (vars st) e) of 
+                                   Right x -> do let st' = st {
+                                                       vars = updateVars var x (vars st)
+                                                       }
+                                             
+                                                 
+                                                 return (addHistory st' (ASet var e))
+
+updateState st (BSet var e) = case (evalB (vars st) e) of 
+                                   Right x -> do let st' = st {
+                                                       vars = updateVars var x (vars st)
+                                                       }
+                                             
+                                                 
+                                                 return (addHistory st' (BSet var e))
+
 
 {-| Performs the correct action for the entered commmand in a given state
 3 main commands to be processed:
@@ -47,25 +67,48 @@ valToInt _ = undefined
 3. Evaluate expression - Add the evaluation to the command history, evaluate the expression and print result before continuing with the REPL
 -}
 process :: State -> Stmt -> IO ()
-process st (ASet var e) = case (evalA (vars st) e) of
-  Right x -> do let st' = addHistory st {
-                      vars  = updateVars var x (vars st)
-                      } (ASet var e)
-                prompt st'
-  Left x -> do putStrLn x
-               prompt st
 
+process st (ASet var e) = case (evalA (vars st) e) of
+  Right x -> do st' <- updateState st (ASet var e)
+                prompt st'
+  Left  x -> do putStrLn x
+                prompt st
+
+process st (BSet var e) = case (evalB (vars st) e) of
+  Right x -> do st' <- updateState st (BSet var e)
+                prompt st'
+  Left  x -> do putStrLn x
+                prompt st
+ 
+process st (If cond stmt) = case (evalB (vars st) cond) of
+  Right (B True) -> do st' <- updateState st stmt
+                       prompt st'   
+  Right (B False) -> prompt st
+
+  Right x -> putStrLn "If condition evaluated to non-Bool"
+
+  Left x -> do putStrLn (show x)
+
+process st (While cond stmt) = case (evalB (vars st) cond) of
+  Right (B True) -> do st' <- updateState st stmt
+                       process st' (While cond stmt)
+
+  Right (B False) -> prompt st
+
+  Right x -> putStrLn "While condition evaluated to non-Bool"
+
+  Left x -> do putStrLn (show x)
+
+ 
        
            -- st' should include the variable set to the result of evaluating
-process st (BEval e)
-  = do let st' = addHistory st (BEval e)
-       putStr(show (evalB (vars st') e)) -- Print the result of evaluation
-       prompt st'
-
-process st (AEval e)
-  = do let st' = addHistory st (AEval e)
-       putStr(show (evalA (vars st') e)) -- Print the result of evaluation
-       prompt st'
+process st (BEval e) = do st' <- updateState st (BEval e)
+                          prompt st'
+ 
+ 
+process st (AEval e) = do st' <- updateState st (AEval e)
+                          prompt st'
+       
 
 -- process st x
 --   = do putStrLn (show x)

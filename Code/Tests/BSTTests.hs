@@ -1,3 +1,5 @@
+module Tests.BSTTests where
+
 import Test.HUnit
 import Struct.BST
 import Struct.Value
@@ -53,7 +55,7 @@ smallestNodeTests = TestList $ map TestCase [
    (smallestNode Empty))-}
   ]
 
-bstTests = TestList [insertTests, retrievalTests, removalTests, smallestNodeTests]
+
 
 ----------------------------------------------------------------------------------------
 -- Test Data

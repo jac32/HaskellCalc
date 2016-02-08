@@ -1,3 +1,5 @@
+module Tests.ParseTests where
+
 import Test.HUnit
 import Parser.Parsing
 import Struct.Statement
@@ -9,7 +11,9 @@ testParse x = case parse pStmt x of
   [(_, x)] -> Left x
   _ -> Left "Nothing could be parsed"
 
-
+-- Parse tests contain overlap.
+-- Better to be exhaustive and systematic 
+-- (Even if this results in overlapping test cases)
 
 arithmeticTests = TestList $ map TestCase [
 
@@ -67,7 +71,7 @@ arithmeticTests = TestList $ map TestCase [
     
   ]
 
-arithmeticPrecedenceTests = TestList $ map TestCase [
+additionTests = TestList $ map TestCase [
 
   -- Tests of addition and subtraction precedence
   (assertEqual "Addition vs subtraction A"
@@ -76,41 +80,53 @@ arithmeticPrecedenceTests = TestList $ map TestCase [
   (assertEqual "Addition vs subtraction B"
    (Right (AEval (Add (Sub (Val (I 3)) (Val (I 6))) (Val (I 7)))) :: Either String Stmt)
    (testParse "3-6+7")),
-
   
   -- Tests of multiplication over addition precedence 
-  (assertEqual "Multiplication over addition A"
+  (assertEqual "Addition vs multiplication A"
    (Right (AEval (Add (Val (I 3)) (Mul (Val (I 6)) (Val (I 7))))) :: Either String Stmt)
    (testParse "3+6*7")),
-  (assertEqual "Multiplication over addition B"
+  (assertEqual "Addition vs multiplication B"
    (Right (AEval (Add  (Mul (Val (I 3)) (Val (I 6))) (Val (I 7)))) :: Either String Stmt)
    (testParse "3*6+7")),
 
-    -- Tests of multiplication over subtraction precedence 
-    (assertEqual "Multiplication over subtraction A"
-   (Right (AEval (Sub (Val (I 3)) (Mul (Val (I 6)) (Val (I 7))))) :: Either String Stmt)
-   (testParse "3-6*7")),
-  (assertEqual "Multiplication over subtraction B"
-   (Right (AEval (Sub  (Mul (Val (I 3)) (Val (I 6))) (Val (I 7)))) :: Either String Stmt)
-   (testParse "3*6-7")),
-
-    -- Tests of division over addition precedence 
-  (assertEqual "Division over addition A"
+  -- Tests of division over addition precedence 
+  (assertEqual "Addition vs division A"
    (Right (AEval (Add (Val (I 3)) (Div (Val (I 6)) (Val (I 7))))) :: Either String Stmt)
    (testParse "3+6/7")),
-  (assertEqual "Division over addition B"
+  (assertEqual "Addition vs division B"
    (Right (AEval (Add  (Div (Val (I 3)) (Val (I 6))) (Val (I 7)))) :: Either String Stmt)
    (testParse "3/6+7")),
 
-    -- Tests of division over subtraction precedence 
-    (assertEqual "Division over subtraction A"
-   (Right (AEval (Sub (Val (I 3)) (Div (Val (I 6)) (Val (I 7))))) :: Either String Stmt)
-   (testParse "3-6/7")),
-  (assertEqual "Division over subtraction B"
-   (Right (AEval (Sub  (Div (Val (I 3)) (Val (I 6))) (Val (I 7)))) :: Either String Stmt)
-   (testParse "3/6-7"))
-  ]  
+  -- Tests of modulo over addition precedence
+  (assertEqual "Addition vs modulo A"
+   (Right (AEval (Add (Val (I 3)) (Mod (Val (I 6)) (Val (I 7))))) :: Either String Stmt)
+   (testParse "3+6%7")),
+  (assertEqual "Addition vs modulo B"
+   (Right (AEval (Add  (Mod (Val (I 3)) (Val (I 6))) (Val (I 7)))) :: Either String Stmt)
+   (testParse "3%6+7"))
 
   
+  ]  
 
-parseTests = TestList [arithmeticTests, arithmeticPrecedenceTests]
+subtractionTests = TestList $ map TestCase [
+  -- Tests of multiplication over subtraction precedence 
+  (assertEqual "Subtraction vs multiplication A"
+   (Right (AEval (Sub (Val (I 3)) (Mul (Val (I 6)) (Val (I 7))))) :: Either String Stmt)
+   (testParse "3-6*7")),
+  (assertEqual "Subtraction vs multiplication B"
+   (Right (AEval (Sub  (Mul (Val (I 3)) (Val (I 6))) (Val (I 7)))) :: Either String Stmt)
+   (testParse "3*6-7")),
+
+  -- Tests of division over subtraction precedence 
+  (assertEqual "Subtraction vs division A"
+   (Right (AEval (Sub (Val (I 3)) (Div (Val (I 6)) (Val (I 7))))) :: Either String Stmt)
+   (testParse "3-6/7")),
+  (assertEqual "Subtraction vs division B"
+   (Right (AEval (Sub  (Div (Val (I 3)) (Val (I 6))) (Val (I 7)))) :: Either String Stmt)
+   (testParse "3/6-7"))
+  ]
+
+  
+multiplicationTests = TestList $ map TestCase [
+  
+  ]
