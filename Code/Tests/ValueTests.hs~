@@ -1,0 +1,13 @@
+import Tests.HUnit
+import Struct.Value
+
+additionTests = TestList $ map TestCase [
+  (assertEqual "Integer only addition"
+   ((Right (I 5)) :: Either String Value)
+   (addV (I 3) (I 2))),
+  (assertEqual "Float addition"
+   ((Right (F 5.5)) :: Either String Value)
+   (addV (I 3) (F 2.5)))
+  ]
+   
+                                        ]

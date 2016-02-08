@@ -1,10 +1,10 @@
 module REPL where
 
-import Statement
-import Parsing
-import Value
-import Eval
-import BST
+import Struct.Statement
+import Parser.Parsing
+import Struct.Value
+import Parser.Eval
+import Struct.BST
 
 {-| Stores the current state of the system
 Tracks command history, variable values and total number of calculations
