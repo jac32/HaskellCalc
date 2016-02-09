@@ -12,6 +12,8 @@ data Stmt = Stmts Stmt Stmt
   | BSet  Name  BExpr
   | If    BExpr Stmt
   | While BExpr Stmt
+  | Func Name Stmt
+  | Exec Name
   deriving (Show, Eq)
 
 data BExpr = Const Bool

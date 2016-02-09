@@ -10,20 +10,24 @@ import Struct.BST
 Tracks command history, variable values and total number of calculations
 -}
 data State = State { vars :: Tree (Name, Value),
+                     funcs :: Tree (Name, Stmt),
                      numCalcs :: Int,
                      history :: [Stmt] }
 
 -- | Initial system state used for initialising the REPL
 initState :: State
-initState = State Empty 0 []
+initState = State Empty Empty 0 []
 
 {-| Updates the variable list with the given name value pair
 Searches the variable list for the given name then adds the
 name value pair. If the name is already in the list then it is
 simply dropped.
 -}
-updateVars :: Name -> Value -> Tree (Name,Value) -> Tree (Name,Value)
-updateVars name value vars = insert (name, value) vars
+updateVars :: Name -> Value -> State -> State
+updateVars n v st = st { vars = insert (n, v) (vars st) }
+
+updateFuncs :: Name -> Stmt -> State -> State
+updateFuncs n stmt st = st { funcs = insert (n, stmt) (funcs st) }
 
 
 -- | Removes the given name and matching value from the list of variables
@@ -35,95 +39,59 @@ addHistory :: State -> Stmt -> State
 addHistory state command = state { numCalcs = (numCalcs state)  + 1,
                                    history = (history state) ++ [command] }
 
-updateState :: State -> Stmt -> IO State
 
-updateState st (Stmts x y) = do st' <- updateState st  x
-                                st' <- updateState st' y
+processStmt :: State -> Stmt -> IO State
+processStmt st (Stmts x y) = do st' <- processStmt st  x
+                                st' <- processStmt st' y
                                 return st'
-                                
 
-updateState st (AEval e) = do putStrLn(show (evalA (vars st) e))
+-- Processing arithmetic and boolean expressions
+processStmt st (AEval e) = do putStrLn(show (evalA (vars st) e))
                               return (addHistory st (AEval e))
-                            
-       
-updateState st (BEval e) = do putStr(show (evalB (vars st) e))
+
+processStmt st (BEval e) = do putStrLn(show (evalB (vars st) e))
                               return (addHistory st (BEval e))
 
-updateState st (ASet var e) = case (evalA (vars st) e) of 
-                                   Right x -> do let st' = st {
-                                                       vars = updateVars var x (vars st)
-                                                       }
-                                             
-                                                 
-                                                 return (addHistory st' (ASet var e))
-
-updateState st (BSet var e) = case (evalB (vars st) e) of 
-                                   Right x -> do let st' = st {
-                                                       vars = updateVars var x (vars st)
-                                                       }
-                                             
-                                                 
-                                                 return (addHistory st' (BSet var e))
+-- Processing arithmetic and boolean assignments
+processStmt st (ASet var e) = case (evalA (vars st) e) of
+  Right x -> do let st' = addHistory (updateVars var x st) (ASet var e)
+                return st'
+  Left x -> do putStrLn x
+               return st
+                                                          
+processStmt st (BSet var e) = case (evalB (vars st) e) of
+  Right x -> do let st' = addHistory (updateVars var x st) (BSet var e)
+                return st'
+  Left x -> do putStrLn x
+               return st
 
 
-{-| Performs the correct action for the entered commmand in a given state
-3 main commands to be processed:
-1. Setting variable - Update variable list and continue REPL with new state
-2. Fetching from history - Evaluate expression to find out which command to fetch and then execute
-3. Evaluate expression - Add the evaluation to the command history, evaluate the expression and print result before continuing with the REPL
--}
-process :: State -> Stmt -> IO ()
+-- Processing loops and conditionals
+processStmt st (If cond stmt) = case (evalB (vars st) cond) of
+  Right (B True) -> do st' <- processStmt st stmt 
+                       return st'
+  Right (B False) -> return st
 
-process st (ASet var e) = case (evalA (vars st) e) of
-  Right x -> do st' <- updateState st (ASet var e)
-                prompt st'
-  Left  x -> do putStrLn x
-                prompt st
+processStmt st (While cond stmt) = case (evalB (vars st) cond) of
+  Right (B True) -> do st' <- processStmt st stmt
+                       st' <- processStmt st' (While cond stmt)
+                       return st'
+  Right (B False) -> return st
 
-process st (BSet var e) = case (evalB (vars st) e) of
-  Right x -> do st' <- updateState st (BSet var e)
-                prompt st'
-  Left  x -> do putStrLn x
-                prompt st
- 
-process st (If cond stmt) = case (evalB (vars st) cond) of
-  Right (B True) -> do st' <- updateState st stmt
-                       prompt st'   
-  Right (B False) -> prompt st
 
-  Right x -> putStrLn "If condition evaluated to non-Bool"
-
-  Left x -> do putStrLn (show x)
-       
-           -- st' should include the variable set to the result of evaluating
-process st (BEval e) = do st' <- updateState st (BEval e)
+-- Processing of functions
+processStmt st (Func name stmt) = do let st' =  updateFuncs name stmt st
+                                     return st'
+    
+    
+processStmts :: State -> Stmt -> IO ()
+processStmts st (Stmts x y) = do st' <- processStmt st  x
+                                 st' <- processStmt st' y
+                                 prompt st'
+processStmts st stmt = do st' <- processStmt st stmt
+                          
                           prompt st'
- 
- 
-process st (AEval e) = do st' <- updateState st (AEval e)
-                          prompt st'
-       
-
-process st (While cond stmts) = case (evalB (vars st) cond) of
-  Right (B True) -> do putStrLn (show stmts)
-                       st' <- updateState st stmts
-                       process st' (While cond stmts)
-
-  Right (B False) -> prompt st
-
-  Right x -> putStrLn "While condition evaluated to non-Bool"
-
-  Left x -> do putStrLn (show x)
-
-process st (Stmts x y) = do st' <- updateState st x
-                            st' <- updateState st' y
-                            prompt st'
- 
-
--- process st x
---   = do putStrLn (show x)
---        prompt st
-       
+  
 {-| Helper function for the main REPL.
 Prints prompt with current calculation count and retrieves the users input
 Removes clutter from 'repl'
@@ -132,7 +100,6 @@ prompt :: State -> IO ()
 prompt st = do putStr ("\n" ++ show (numCalcs st) ++ "> ")
                inp <- getLine
                repl st inp 
-
 
 {-| Read, Eval, Print Loop
 This reads and parses the input using the pCommand parser, and calls
@@ -156,14 +123,14 @@ repl st inp
   | head inp /= ':' =
       case parse pStmts inp of
         [(cmd, "")] -> -- Must parse entire input
-          process st cmd
+          processStmts st cmd
         [(_, x)] -> do putStrLn ("Parse Error - remaining text: " ++ x)
                        prompt st
         x -> do putStrLn "Parse Error - Nothing could be parsed"
                 prompt st
   | op == 'h' = do printHelp
                    prompt st
-  | op == 'f' = do executeFile st arg
+  | op == 'l' = do st' <- executeFile st arg
                    prompt st
   | op == 'q' = putStrLn "Bye!"
   | otherwise = do putStrLn "Not a recognised command"
@@ -176,7 +143,13 @@ repl st inp
 
 executeFile :: State -> String -> IO ()
 executeFile st adr = do contents <- readFile adr
-                        putStrLn contents
+                        case parse pStmts contents of
+                          [(cmd, "")] -> processStmts st cmd
+                        
+                          [(_, x)] -> do putStrLn ("Parse Error - remaining text: " ++ x)
+                                         
+                          x -> do putStrLn "Parse Error - Nothing could be parsed"
+
   
 printHelp :: IO ()
 printHelp = putStrLn "No help text available"
