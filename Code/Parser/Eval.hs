@@ -41,8 +41,6 @@ evalA vars (AVar v)   = (valOf v vars)
 
 evalA vars (Neg e)    = unFrame vars e negV
   
-evalA vars (Pow x y)  = binFrame vars x y powV
-  
 evalA vars (Add x y)  = binFrame vars x y addV
 
 evalA vars (Sub x y)  = binFrame vars x y subV
