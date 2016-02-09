@@ -36,6 +36,12 @@ addHistory state command = state { numCalcs = (numCalcs state)  + 1,
                                    history = (history state) ++ [command] }
 
 updateState :: State -> Stmt -> IO State
+
+updateState st (Stmts x y) = do st' <- updateState st  x
+                                st' <- updateState st' y
+                                return st'
+                                
+
 updateState st (AEval e) = do putStrLn(show (evalA (vars st) e))
                               return (addHistory st (AEval e))
                             
@@ -98,14 +104,10 @@ process st (AEval e) = do st' <- updateState st (AEval e)
                           prompt st'
        
 
-
-
-
-
-
-process st (While cond stmt) = case (evalB (vars st) cond) of
-  Right (B True) -> do st' <- updateState st stmt
-                       process st' (While cond stmt)
+process st (While cond stmts) = case (evalB (vars st) cond) of
+  Right (B True) -> do putStrLn (show stmts)
+                       st' <- updateState st stmts
+                       process st' (While cond stmts)
 
   Right (B False) -> prompt st
 
@@ -113,6 +115,9 @@ process st (While cond stmt) = case (evalB (vars st) cond) of
 
   Left x -> do putStrLn (show x)
 
+process st (Stmts x y) = do st' <- updateState st x
+                            st' <- updateState st' y
+                            prompt st'
  
 
 -- process st x
@@ -149,7 +154,7 @@ All currently available operations:
 repl :: State -> String -> IO ()
 repl st inp 
   | head inp /= ':' =
-      case parse pStmt inp of
+      case parse pStmts inp of
         [(cmd, "")] -> -- Must parse entire input
           process st cmd
         [(_, x)] -> do putStrLn ("Parse Error - remaining text: " ++ x)

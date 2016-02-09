@@ -5,13 +5,14 @@ import Struct.Value
 
 type Name = String
 
-data Stmt = AEval AExpr
+data Stmt = Stmts Stmt Stmt
+  | AEval AExpr
   | BEval BExpr
   | ASet  Name  AExpr
   | BSet  Name  BExpr
   | If    BExpr Stmt
   | While BExpr Stmt
-  deriving Show
+  deriving (Show, Eq)
 
 data BExpr = Const Bool
   | Not BExpr
@@ -21,7 +22,7 @@ data BExpr = Const Bool
   | Eq  AExpr AExpr
   | Gt  AExpr AExpr
   | Lt  AExpr AExpr
-  deriving Show
+  deriving (Show, Eq)
 
 data AExpr = Val Value
   | AVar Name
@@ -33,8 +34,18 @@ data AExpr = Val Value
   | Div AExpr AExpr
   | Mod AExpr AExpr
   | Pow AExpr AExpr
-    deriving Show
+    deriving (Show, Eq)
 
+
+pStmts :: Parser Stmt
+pStmts = do s1 <- pStmt
+            do symbol ";"
+               s2 <- pStmt
+               symbol ";"
+               return (Stmts s1 s2)
+               ||| return s1
+            
+       
 
 pStmt :: Parser Stmt
 pStmt = do symbol "if"
@@ -43,7 +54,7 @@ pStmt = do symbol "if"
            return (If b s)
            ||| do symbol "while"
                   b <- pBExpr
-                  s <- pStmt
+                  s <- pStmts
                   return (While b s)
            ||| do n <- identifier
                   symbol "="
@@ -53,14 +64,13 @@ pStmt = do symbol "if"
                   symbol "="
                   v <- pBExpr
                   return (BSet n v)
-          ||| do e <- pBExpr
-                 return (BEval e)
-          ||| do e <- pAExpr
-                 return (AEval e)
-                  
+           ||| do e <- pBExpr
+                  return (BEval e)
+           ||| do e <- pAExpr
+                  return (AEval e)
+          
+           
                  
--- Code here could be simplified
--- NOT needs implemented
 pBExpr :: Parser BExpr
 pBExpr = do b1 <- pBTerm
             do symbol "&&"
