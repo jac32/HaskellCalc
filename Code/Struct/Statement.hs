@@ -40,8 +40,7 @@ data AExpr = Val Value
 pStmts :: Parser Stmt
 pStmts = do s1 <- pStmt
             do symbol ";"
-               s2 <- pStmt
-               symbol ";"
+               s2 <- pStmts
                return (Stmts s1 s2)
                ||| return s1
             
@@ -50,7 +49,7 @@ pStmts = do s1 <- pStmt
 pStmt :: Parser Stmt
 pStmt = do symbol "if"
            b <- pBExpr
-           s <- pStmt
+           s <- pStmts
            return (If b s)
            ||| do symbol "while"
                   b <- pBExpr
