@@ -82,7 +82,14 @@ processStmt st (While cond stmt) = case (evalB (vars st) cond) of
 -- Processing of functions
 processStmt st (Func name stmt) = do let st' =  updateFuncs name stmt st
                                      return st'
-    
+processStmt st (Exec name) = case (valOf name (funcs st)) of
+  Right x -> processStmt st x
+  Left x -> do putStrLn (show x)
+               return st
+
+
+processStmt st x = do putStrLn (show x)
+                      return st    
     
 processStmts :: State -> Stmt -> IO ()
 processStmts st (Stmts x y) = do st' <- processStmt st  x

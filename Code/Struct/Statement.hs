@@ -12,6 +12,7 @@ data Stmt = Stmts Stmt Stmt
   | BSet  Name  BExpr
   | If    BExpr Stmt
   | While BExpr Stmt
+  | For AExpr BExpr AExpr
   | Func Name Stmt
   | Exec Name
   deriving (Show, Eq)
@@ -53,6 +54,15 @@ pStmt = do symbol "if"
            b <- pBExpr
            s <- pStmts
            return (If b s)
+           ||| do symbol "func"
+                  n <- identifier
+                  s <- pStmts
+                  return (Func n s)
+           ||| do symbol "for"
+                  f <- pFactor
+                  b <- pBExpr
+                  a <- pAExpr
+                  return (For f b a)
            ||| do symbol "while"
                   b <- pBExpr
                   s <- pStmts
@@ -65,6 +75,9 @@ pStmt = do symbol "if"
                   symbol "="
                   v <- pBExpr
                   return (BSet n v)
+           ||| do n<- identifier
+                  symbol "()"
+                  return (Exec n) 
            ||| do e <- pBExpr
                   return (BEval e)
            ||| do e <- pAExpr
