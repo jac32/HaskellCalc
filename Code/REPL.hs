@@ -1,5 +1,6 @@
 module REPL where
 
+import System.Console.Haskeline
 import Struct.Statement
 import Parser.Parsing
 import Struct.Value
@@ -40,29 +41,29 @@ addHistory state command = state { numCalcs = (numCalcs state)  + 1,
                                    history = (history state) ++ [command] }
 
 
-processStmt :: State -> Stmt -> IO State
+processStmt :: State -> Stmt -> InputT IO State
 processStmt st (Stmts x y) = do st' <- processStmt st  x
                                 st' <- processStmt st' y
                                 return st'
 
 -- Processing arithmetic and boolean expressions
-processStmt st (AEval e) = do putStrLn(show (evalA (vars st) e))
+processStmt st (AEval e) = do outputStrLn(show (evalA (vars st) e))
                               return (addHistory st (AEval e))
 
-processStmt st (BEval e) = do putStrLn(show (evalB (vars st) e))
+processStmt st (BEval e) = do outputStrLn(show (evalB (vars st) e))
                               return (addHistory st (BEval e))
 
 -- Processing arithmetic and boolean assignments
 processStmt st (ASet var e) = case (evalA (vars st) e) of
   Right x -> do let st' = addHistory (updateVars var x st) (ASet var e)
                 return st'
-  Left x -> do putStrLn x
+  Left x -> do outputStrLn x
                return st
                                                           
 processStmt st (BSet var e) = case (evalB (vars st) e) of
   Right x -> do let st' = addHistory (updateVars var x st) (BSet var e)
                 return st'
-  Left x -> do putStrLn x
+  Left x -> do outputStrLn x
                return st
 
 
@@ -84,29 +85,29 @@ processStmt st (Func name stmt) = do let st' =  updateFuncs name stmt st
                                      return st'
 processStmt st (Exec name) = case (valOf name (funcs st)) of
   Right x -> processStmt st x
-  Left x -> do putStrLn (show x)
+  Left x -> do outputStrLn (show x)
                return st
 
 
-processStmt st x = do putStrLn (show x)
+processStmt st x = do outputStrLn (show x)
                       return st    
     
-processStmts :: State -> Stmt -> IO ()
+processStmts :: State -> Stmt -> InputT IO ()
 processStmts st (Stmts x y) = do st' <- processStmt st  x
                                  st' <- processStmt st' y
                                  prompt st'
 processStmts st stmt = do st' <- processStmt st stmt
-                          
                           prompt st'
   
 {-| Helper function for the main REPL.
 Prints prompt with current calculation count and retrieves the users input
 Removes clutter from 'repl'
 -}
-prompt :: State -> IO ()
-prompt st = do putStr ("\n" ++ show (numCalcs st) ++ "> ")
-               inp <- getLine
-               repl st inp 
+prompt :: State -> InputT IO ()
+prompt st = do inp <- getInputLine (show (numCalcs st) ++ "> ")
+               case inp of
+                 Just x -> repl st x
+
 
 {-| Read, Eval, Print Loop
 This reads and parses the input using the pCommand parser, and calls
@@ -125,22 +126,22 @@ All currently available operations:
 (to be implemented)
 
 -}
-repl :: State -> String -> IO ()
+repl :: State -> String -> InputT IO ()
 repl st inp 
   | head inp /= ':' =
       case parse pStmts inp of
         [(cmd, "")] -> -- Must parse entire input
           processStmts st cmd
-        [(_, x)] -> do putStrLn ("Parse Error - remaining text: " ++ x)
+        [(_, x)] -> do outputStrLn ("Parse Error - remaining text: " ++ x)
                        prompt st
-        x -> do putStrLn "Parse Error - Nothing could be parsed"
+        x -> do outputStrLn "Parse Error - Nothing could be parsed"
                 prompt st
   | op == 'h' = do printHelp
                    prompt st
-  | op == 'l' = do st' <- executeFile st arg
-                   prompt st
-  | op == 'q' = putStrLn "Bye!"
-  | otherwise = do putStrLn "Not a recognised command"
+--  | op == 'l' = do st' <- executeFile st arg
+  --                 outputStrLn ("Loaded file: " ++ arg)
+  | op == 'q' = outputStrLn "Bye!"
+  | otherwise = do outputStrLn "Not a recognised command"
                    prompt st
   where
     op = head (tail inp)
@@ -148,15 +149,15 @@ repl st inp
     
 
 
-executeFile :: State -> String -> IO ()
-executeFile st adr = do contents <- readFile adr
-                        case parse pStmts contents of
-                          [(cmd, "")] -> processStmts st cmd
+-- executeFile :: State -> String -> InputT IO ()
+-- executeFile st adr = do contents <- readFile adr
+--                         case parse pStmts contents of
+--                           [(cmd, "")] -> processStmts st cmd
                         
-                          [(_, x)] -> do putStrLn ("Parse Error - remaining text: " ++ x)
+--                           [(_, x)] -> do outputStrLn ("Parse Error - remaining text: " ++ x)
                                          
-                          x -> do putStrLn "Parse Error - Nothing could be parsed"
+--                           x -> do outputStrLn "Parse Error - Nothing could be parsed"
 
   
-printHelp :: IO ()
-printHelp = putStrLn "No help text available"
+printHelp :: InputT IO ()
+printHelp = outputStrLn "No help text available"
