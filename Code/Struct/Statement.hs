@@ -12,7 +12,7 @@ data Stmt = Stmts Stmt Stmt
   | BSet  Name  BExpr
   | If    BExpr Stmt
   | While BExpr Stmt
-  | For AExpr BExpr AExpr
+  | For Name BExpr AExpr Stmt
   | Func Name Stmt
   | Exec Name
   deriving (Show, Eq)
@@ -51,21 +51,39 @@ pStmts = do s1 <- pStmt
 
 pStmt :: Parser Stmt
 pStmt = do symbol "if"
-           b <- pBExpr
+           symbol "(" 
+           b<- pBExpr
+           symbol ")"
+           symbol "{"
            s <- pStmts
+           symbol "}"
            return (If b s)
            ||| do symbol "func"
                   n <- identifier
+                  symbol "="
+                  symbol "{"
                   s <- pStmts
+                  symbol "}"
                   return (Func n s)
            ||| do symbol "for"
-                  f <- pFactor
+                  symbol "("
+                  a1 <- identifier
+                  symbol ";"
                   b <- pBExpr
-                  a <- pAExpr
-                  return (For f b a)
-           ||| do symbol "while"
-                  b <- pBExpr
+                  symbol ";"
+                  a2 <- pAExpr
+                  symbol ")"
+                  symbol "{"
                   s <- pStmts
+                  symbol "}"
+                  return (For a1 b a2 s)
+           ||| do symbol "while"
+                  symbol "("
+                  b <- pBExpr
+                  symbol ")"
+                  symbol "{"
+                  s <- pStmts
+                  symbol "}"
                   return (While b s)
            ||| do n <- identifier
                   symbol "="
