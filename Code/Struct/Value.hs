@@ -116,14 +116,14 @@ modV _ _                         = Left "Modulo with incompatible types."
 factV				   :: Value -> Either String Value
 factV  (I x)			   | x > 0	  = Right (I (product [1..x])) 
 				   | x < 0 	  = Left "Factorial operation with negative number."
-factV _ _			   = Left "Factorial with incompatible types."
+factV _ 			   = Left "Factorial with incompatible types."
 
 --------------------------------------------------------------
 --Square root function.
 
 sqrtV				   :: Value -> Either String Value
-sqrtV (I x)			   | x > 0 	  = Right (F (sqrt (fromIntegral(x)))
-				   | x < 0	  = Left "Square root of negative number."
+sqrtV (I x)                      | x > 0 	  = Right (F (sqrt (fromIntegral(x)))   
+                                 | x < 0	  = Left "Square root of negative number."
 
 sqrtV (F x)			   | x > 0 	  = Right (F (sqrt (fromIntegral(x)))
 				   | x < 0	  = Left "Square root of negative number."
