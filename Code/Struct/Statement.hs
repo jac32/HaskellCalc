@@ -59,7 +59,7 @@ pStmt = do symbol "if"
            symbol "}"
            return (If b s)
            ||| do symbol "func"
-                  n <- identifier
+                  n <- identifier 
                   symbol "="
                   symbol "{"
                   s <- pStmts
@@ -96,13 +96,11 @@ pStmt = do symbol "if"
            ||| do n<- identifier
                   symbol "()"
                   return (Exec n) 
-           ||| do e <- pBExpr
-                  return (BEval e)
            ||| do e <- pAExpr
                   return (AEval e)
-          
-           
-                 
+           ||| do e <- pBExpr
+                  return (BEval e)
+                
 pBExpr :: Parser BExpr
 pBExpr = do b1 <- pBTerm
             do symbol "&&"
