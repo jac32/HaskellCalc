@@ -1,5 +1,6 @@
 module REPL where
 
+import Control.Monad.IO.Class
 import System.Console.Haskeline
 import Struct.Statement
 import Parser.Parsing
@@ -13,11 +14,13 @@ Tracks command history, variable values and total number of calculations
 data State = State { vars :: Tree (Name, Value),
                      funcs :: Tree (Name, Stmt),
                      numCalcs :: Int,
-                     history :: [Stmt] }
+                     history :: [Stmt],
+                     results :: [Value]
+                   }
 
 -- | Initial system state used for initialising the REPL
 initState :: State
-initState = State Empty Empty 0 []
+initState = State Empty Empty 0 [] []
 
 {-| Updates the variable list with the given name value pair
 Searches the variable list for the given name then adds the
@@ -36,9 +39,10 @@ dropVar :: Name -> Tree (Name,Value) -> Tree (Name,Value)
 dropVar name vars = remove name vars
 
 -- Add a command to the command history in the state
-addHistory :: State -> Stmt -> State
-addHistory state command = state { numCalcs = (numCalcs state)  + 1,
-                                   history = (history state) ++ [command] }
+addHistory :: State -> Stmt -> Value -> State
+addHistory state command value = state { numCalcs = (numCalcs state)  + 1,
+                                   history = (history state) ++ [command],
+                                   results = value : (results state) }
 
 fetchHistory :: Int -> State -> Stmt
 fetchHistory x st = (history st) !! x
@@ -49,21 +53,27 @@ processStmt st (Stmts x y) = do st' <- processStmt st  x
                                 return st'
 
 -- Processing arithmetic and boolean expressions
-processStmt st (AEval e) = do outputStrLn(show (evalA (vars st) e))
-                              return (addHistory st (AEval e))
+processStmt st (AEval e) = do outputStrLn(show val)
+                              case val of
+                                Right x -> return (addHistory st (AEval e) x)
+                                Left x -> do outputStrLn ("Could not evaluate: " ++ x)
+                                             return st
+                                where val = (evalA (vars st) e)
 
-processStmt st (BEval e) = do outputStrLn(show (evalB (vars st) e))
-                              return (addHistory st (BEval e))
+processStmt st (BEval e) = do outputStrLn(show val)
+                              case val of
+                                Right x -> return (addHistory st (BEval e) x)
+                                where val = (evalB (vars st) e)
 
 -- Processing arithmetic and boolean assignments
 processStmt st (ASet var e) = case (evalA (vars st) e) of
-  Right x -> do let st' = addHistory (updateVars var x st) (ASet var e)
+  Right x -> do let st' = addHistory (updateVars var x st) (ASet var e) x
                 return st'
   Left x -> do outputStrLn x
                return st
                                                           
 processStmt st (BSet var e) = case (evalB (vars st) e) of
-  Right x -> do let st' = addHistory (updateVars var x st) (BSet var e)
+  Right x -> do let st' = addHistory (updateVars var x st) (BSet var e) x
                 return st'
   Left x -> do outputStrLn x
                return st
@@ -93,8 +103,14 @@ processStmt st (Hist e) = case (evalA (vars st) e) of
 -- Processing of functions
 processStmt st (Func name stmt) = do let st' =  updateFuncs name stmt st
                                      return st'
+                                     
 processStmt st (Exec name) = case (valOf name (funcs st)) of
-  Right x -> processStmt st x
+  Right x -> do st' <- processStmt initState x
+                outputStrLn (show (results st))
+                outputStrLn (show (results st'))
+                let st'' = addHistory st (Exec name)  (head (results st'))
+                outputStrLn (show (results st''))
+                return st''
   Left x -> do outputStrLn (show x)
                return st
 
@@ -105,8 +121,10 @@ processStmt st x = do outputStrLn (show x)
 processStmts :: State -> Stmt -> InputT IO ()
 processStmts st (Stmts x y) = do st' <- processStmt st  x
                                  st' <- processStmt st' y
+                                 outputStrLn (show (head (results st')))
                                  prompt st'
 processStmts st stmt = do st' <- processStmt st stmt
+                          outputStrLn (show (head (results st')))
                           prompt st'
   
 {-| Helper function for the main REPL.
@@ -148,8 +166,8 @@ repl st inp
                 prompt st
   | op == 'h' = do printHelp
                    prompt st
---  | op == 'l' = do st' <- executeFile st arg
-  --                 outputStrLn ("Loaded file: " ++ arg)
+  | op == 'l' = do st' <- executeFile st arg
+                   outputStrLn ("Loaded file: " ++ arg)
   | op == 'q' = outputStrLn "Bye!"
   | otherwise = do outputStrLn "Not a recognised command"
                    prompt st
@@ -159,14 +177,14 @@ repl st inp
     
 
 
--- executeFile :: State -> String -> InputT IO ()
--- executeFile st adr = do contents <- readFile adr
---                         case parse pStmts contents of
---                           [(cmd, "")] -> processStmts st cmd
+executeFile :: State -> String -> InputT IO ()
+executeFile st adr = do contents <- liftIO $ readFile adr
+                        case parse pStmts contents of
+                          [(cmd, "")] -> processStmts st cmd
                         
---                           [(_, x)] -> do outputStrLn ("Parse Error - remaining text: " ++ x)
+                          [(_, x)] -> do outputStrLn ("Parse Error - remaining text: " ++ x)
                                          
---                           x -> do outputStrLn "Parse Error - Nothing could be parsed"
+                          x -> do outputStrLn "Parse Error - Nothing could be parsed"
 
   
 printHelp :: InputT IO ()

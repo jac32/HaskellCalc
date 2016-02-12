@@ -73,8 +73,8 @@ pStmt =  do i <- pIf
                    symbol "()"
                    return (Exec n)
             ||| do symbol "$"
-                  e <- pAExpr
-                  return (Hist e)
+                   e <- pAExpr
+                   return (Hist e)
             ||| do e <- pAExpr
                    return (AEval e)
             ||| do e <- pBExpr
