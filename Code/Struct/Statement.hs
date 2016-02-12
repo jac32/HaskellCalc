@@ -8,6 +8,7 @@ type Name = String
 data Stmt = Stmts Stmt Stmt
   | AEval AExpr
   | BEval BExpr
+  | Hist AExpr
   | ASet  Name  AExpr
   | BSet  Name  BExpr
   | If    BExpr Stmt
@@ -70,7 +71,10 @@ pStmt =  do i <- pIf
                    return (BSet n v)
             ||| do n<- identifier
                    symbol "()"
-                   return (Exec n) 
+                   return (Exec n)
+            ||| do symbol "$"
+                   e <- pAExpr
+                   return (Hist e)
             ||| do e <- pAExpr
                    return (AEval e)
             ||| do e <- pBExpr
@@ -123,7 +127,6 @@ pWhile =  do symbol "while"
              symbol "}"
              return (While b s)
 
-     
 pBExpr :: Parser BExpr
 pBExpr = do b1 <- pBTerm
             do symbol "&&"
@@ -211,6 +214,6 @@ pFactor = do f <- float
                     e <- pAExpr
                     symbol ")"
                     return (Sqrt e)
-             
+                          
 
              
