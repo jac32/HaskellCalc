@@ -122,12 +122,10 @@ factV _ 			   = Left "Factorial with incompatible types."
 --Square root function.
 
 sqrtV				   :: Value -> Either String Value
-sqrtV (I x)                      | x > 0 	  = Right (F (sqrt (fromIntegral(x)))   
-                                 | x < 0	  = Left "Square root of negative number."
+sqrtV (I x)                        | x > 0 	  = Right (F (sqrt (fromIntegral(x)))) 
+                                   | x < 0	  = Left "Square root of negative number."
 
-sqrtV (F x)			   | x > 0 	  = Right (F (sqrt (fromIntegral(x)))
+sqrtV (F x)			   | x > 0 	  = Right (F (sqrt (x)))
 				   | x < 0	  = Left "Square root of negative number."
 
-sqrtV _				   = Left "Square root with incompatible types".
-
-                        
+sqrtV _				   = Left "Square root with incompatible types."

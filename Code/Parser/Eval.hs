@@ -55,6 +55,9 @@ evalA vars (Pow x y)  = binFrame vars x y powV
 
 evalA vars (Abs x) = unFrame vars x absV
 
+evalA vars (Sqrt x) = unFrame vars x sqrtV
+
+evalA vars (Fact x) = unFrame vars x factV
 -----------------------------------------------------------------
 -- Function Application Frames
 -----------------------------------------------------------------

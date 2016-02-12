@@ -37,6 +37,8 @@ data AExpr = Val Value
   | Div AExpr AExpr
   | Mod AExpr AExpr
   | Pow AExpr AExpr
+  | Fact AExpr
+  | Sqrt AExpr
     deriving (Show, Eq)
 
 
@@ -171,6 +173,9 @@ pFactor = do f <- float
              ||| do symbol "-"
                     e <- pFactor
                     return (Neg e)
+             ||| do symbol "!"
+                    e <- pFactor
+                    return (Fact e)
              ||| do v <- identifier
                     return (AVar v)
              ||| do symbol "("
@@ -180,6 +185,10 @@ pFactor = do f <- float
              ||| do symbol "|"
                     e <- pAExpr
                     symbol "|"
-                    return (Abs e)                 
+                    return (Abs e)
+             ||| do symbol "Sqrt"
+                    e <- pAExpr
+                    return (Sqrt e)
+             
 
              
