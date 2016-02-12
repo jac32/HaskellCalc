@@ -79,6 +79,15 @@ processStmt st (While cond stmt) = case (evalB (vars st) cond) of
                        return st'
   Right (B False) -> return st
 
+processStmt st (For var cond inc stmt) = case (evalB (vars st) cond) of
+  Right (B True) -> do st' <- processStmt st inc
+                       st' <- processStmt st' stmt
+                       st' <- processStmt st' (For var cond inc stmt)   
+                       return st'
+
+  Right (B False) -> return st
+
+
 
 -- Processing of functions
 processStmt st (Func name stmt) = do let st' =  updateFuncs name stmt st
