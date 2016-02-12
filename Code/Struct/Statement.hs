@@ -8,6 +8,7 @@ type Name = String
 data Stmt = Stmts Stmt Stmt
   | AEval AExpr
   | BEval BExpr
+  | Hist AExpr
   | ASet  Name  AExpr
   | BSet  Name  BExpr
   | If    BExpr Stmt
@@ -87,6 +88,9 @@ pStmt = do symbol "if"
                   s <- pStmts
                   symbol "}"
                   return (While b s)
+           ||| do symbol "$"
+                  e <- pAExpr
+                  return (Hist e)
            ||| do n <- identifier
                   symbol "="
                   v <- pAExpr
@@ -188,6 +192,6 @@ pFactor = do f <- float
              ||| do symbol "Sqrt"
                     e <- pAExpr
                     return (Sqrt e)
-             
+                          
 
              

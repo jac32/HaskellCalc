@@ -40,6 +40,8 @@ addHistory :: State -> Stmt -> State
 addHistory state command = state { numCalcs = (numCalcs state)  + 1,
                                    history = (history state) ++ [command] }
 
+fetchHistory :: Int -> State -> Stmt
+fetchHistory x st = (history st) !! x
 
 processStmt :: State -> Stmt -> InputT IO State
 processStmt st (Stmts x y) = do st' <- processStmt st  x
@@ -79,6 +81,14 @@ processStmt st (While cond stmt) = case (evalB (vars st) cond) of
                        return st'
   Right (B False) -> return st
 
+processStmt st (Hist e) = case (evalA (vars st) e) of
+  Right (I x) -> do st' <- processStmt st (fetchHistory x st)
+                    return st'
+  Right x -> do (outputStrLn "History commands must evaluate to an integer value")
+                return st
+
+  Left  x -> do outputStrLn x
+                return st
 
 -- Processing of functions
 processStmt st (Func name stmt) = do let st' =  updateFuncs name stmt st
@@ -91,7 +101,7 @@ processStmt st (Exec name) = case (valOf name (funcs st)) of
 
 processStmt st x = do outputStrLn (show x)
                       return st    
-    
+
 processStmts :: State -> Stmt -> InputT IO ()
 processStmts st (Stmts x y) = do st' <- processStmt st  x
                                  st' <- processStmt st' y
