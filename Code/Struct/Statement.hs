@@ -169,13 +169,12 @@ pFactor :: Parser AExpr
 pFactor = do f <- float
              return  (Val (F f))
              ||| do i <- integer
-                    return (Val (I i))
+                    do symbol "!"
+                       return (Fact (Val (I i)))
+                       |||return (Val (I i))
              ||| do symbol "-"
                     e <- pFactor
                     return (Neg e)
-             ||| do symbol "!"
-                    e <- pFactor
-                    return (Fact e)
              ||| do v <- identifier
                     return (AVar v)
              ||| do symbol "("
