@@ -13,7 +13,7 @@ data Stmt = Stmts Stmt Stmt
   | BSet  Name  BExpr
   | If    BExpr Stmt
   | While BExpr Stmt
-  | For Name BExpr AExpr Stmt
+  | For AExpr BExpr Stmt Stmt
   | Func Name Stmt
   | Exec Name
   deriving (Show, Eq)
@@ -109,12 +109,12 @@ pFor =  do symbol "for"
            symbol ";"
            b <- pBExpr
            symbol ";"
-           a2 <- pAExpr
+           a2 <- pStmt
            symbol ")"
            symbol "{"
            s <- pStmts
            symbol "}"
-           return (For a1 b a2 s)
+           return (For (AVar a1) b a2 s)
 
  
 pWhile :: Parser Stmt
