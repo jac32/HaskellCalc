@@ -53,60 +53,80 @@ pStmts = do s1 <- pStmt
        
 
 pStmt :: Parser Stmt
-pStmt = do symbol "if"
-           symbol "(" 
-           b<- pBExpr
+pStmt =  do i <- pIf
+            return i
+            ||| do f <- pFunc
+                   return f
+            ||| do f <- pFor
+                   return f          
+            ||| do w <- pWhile
+                   return w
+            ||| do n <- identifier
+                   symbol "="
+                   v <- pAExpr
+                   return (ASet n v)
+            ||| do n <- identifier
+                   symbol "="
+                   v <- pBExpr
+                   return (BSet n v)
+            ||| do n<- identifier
+                   symbol "()"
+                   return (Exec n)
+            ||| do symbol "$"
+                  e <- pAExpr
+                  return (Hist e)
+            ||| do e <- pAExpr
+                   return (AEval e)
+            ||| do e <- pBExpr
+                   return (BEval e)
+       
+
+pFunc :: Parser Stmt
+pFunc = do symbol "func"
+           n <- identifier 
+           symbol "="
+           symbol "{"
+           s <- pStmts
+           symbol "}"
+           return (Func n s)
+
+ 
+pIf :: Parser Stmt
+pIf = do symbol "if"
+         symbol "(" 
+         b<- pBExpr
+         symbol ")"
+         symbol "{"
+         s <- pStmts
+         symbol "}"
+         return (If b s)
+
+  
+pFor :: Parser Stmt
+pFor =  do symbol "for"
+           symbol "("
+           a1 <- identifier
+           symbol ";"
+           b <- pBExpr
+           symbol ";"
+           a2 <- pAExpr
            symbol ")"
            symbol "{"
            s <- pStmts
            symbol "}"
-           return (If b s)
-           ||| do symbol "func"
-                  n <- identifier 
-                  symbol "="
-                  symbol "{"
-                  s <- pStmts
-                  symbol "}"
-                  return (Func n s)
-           ||| do symbol "for"
-                  symbol "("
-                  a1 <- identifier
-                  symbol ";"
-                  b <- pBExpr
-                  symbol ";"
-                  a2 <- pAExpr
-                  symbol ")"
-                  symbol "{"
-                  s <- pStmts
-                  symbol "}"
-                  return (For a1 b a2 s)
-           ||| do symbol "while"
-                  symbol "("
-                  b <- pBExpr
-                  symbol ")"
-                  symbol "{"
-                  s <- pStmts
-                  symbol "}"
-                  return (While b s)
-           ||| do symbol "$"
-                  e <- pAExpr
-                  return (Hist e)
-           ||| do n <- identifier
-                  symbol "="
-                  v <- pAExpr
-                  return (ASet n v)
-           ||| do n <- identifier
-                  symbol "="
-                  v <- pBExpr
-                  return (BSet n v)
-           ||| do n<- identifier
-                  symbol "()"
-                  return (Exec n) 
-           ||| do e <- pAExpr
-                  return (AEval e)
-           ||| do e <- pBExpr
-                  return (BEval e)
-                
+           return (For a1 b a2 s)
+
+ 
+pWhile :: Parser Stmt
+pWhile =  do symbol "while"
+             symbol "("
+             b <- pBExpr
+             symbol ")"
+             symbol "{"
+             s <- pStmts
+             symbol "}"
+             return (While b s)
+
 pBExpr :: Parser BExpr
 pBExpr = do b1 <- pBTerm
             do symbol "&&"
@@ -190,7 +210,9 @@ pFactor = do f <- float
                     symbol "|"
                     return (Abs e)
              ||| do symbol "Sqrt"
+                    symbol "("
                     e <- pAExpr
+                    symbol ")"
                     return (Sqrt e)
                           
 
