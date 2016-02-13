@@ -7,6 +7,7 @@ type Name = String
 
 data Expr = Aexp AExpr
   | Bexp BExpr
+  | Var Name
   deriving (Show, Eq)
 
 data Stmt = Stmts Stmt Stmt
@@ -15,14 +16,14 @@ data Stmt = Stmts Stmt Stmt
   | Set  Name  Expr
   | If    BExpr Stmt
   | While BExpr Stmt
-  | For AExpr BExpr Stmt Stmt
+  | For Expr BExpr Stmt Stmt
   | Func Name Stmt
   | Exec Name
   deriving (Show, Eq)
 
 data BExpr = Const Bool
   | Not BExpr
-  | BVar Name
+  | BVar Expr 
   | Or  BExpr BExpr
   | And BExpr BExpr
   | Eq  AExpr AExpr
@@ -31,8 +32,8 @@ data BExpr = Const Bool
   deriving (Show, Eq)
 
 data AExpr = Val Value
-  | AVar Name
   | Neg AExpr
+  | AVar Expr
   | Abs AExpr
   | Add AExpr AExpr
   | Sub AExpr AExpr
@@ -82,6 +83,7 @@ pExpr = do b <- pBExpr
            return (Bexp b)
            ||| do a <- pAExpr
                   return (Aexp a)
+           
  
 
 pFunc :: Parser Stmt
@@ -117,7 +119,7 @@ pFor =  do symbol "for"
            symbol "{"
            s <- pStmts
            symbol "}"
-           return (For (AVar a1) b a2 s)
+           return (For (Var a1) b a2 s)
 
  
 pWhile :: Parser Stmt
@@ -162,9 +164,8 @@ pBTerm = do b <- bool
                       ||| do symbol ">"
                              v2 <- pAExpr
                              return (Gt v1 v2)
-            ||| do i <- identifier
-                   return (BVar i)
-
+                      ||| do v <- identifier
+                             return (BVar (Var v))
 
                
 pAExpr :: Parser AExpr
@@ -203,7 +204,7 @@ pFactor = do f <- float
                     e <- pFactor
                     return (Neg e)
              ||| do v <- identifier
-                    return (AVar v)
+                    return (AVar (Var v))
              ||| do symbol "("
                     e <- pAExpr
                     symbol ")"

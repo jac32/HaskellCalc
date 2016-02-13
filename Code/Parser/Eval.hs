@@ -21,14 +21,17 @@ eval :: Tree(Name, Value) ->
 ------------------------------------------
 
 eval vars (Aexp e) = evalA vars e
+
 eval vars (Bexp e) = evalB vars e
+
+--eval vars (Var v)  = (valOf v vars)
 
 -----------------------------------------------------------------
 -- Boolean Expression Evaluations
 -----------------------------------------------------------------
 evalB vars (Const b) = Right (B b)
 
-evalB vars (BVar v)  = (valOf v vars)
+evalB vars (BVar (Var v))  = (valOf v vars)
 
 evalB vars (Not b)   = bUnFrame vars b notV
 
@@ -48,7 +51,7 @@ evalB vars (Lt x y)  = binFrame vars x y ltV
 
 evalA vars (Val x)    = Right x
 
-evalA vars (AVar v)   = (valOf v vars)
+evalA vars (AVar (Var v))  = (valOf v vars)
 
 evalA vars (Neg e)    = unFrame vars e negV
   
