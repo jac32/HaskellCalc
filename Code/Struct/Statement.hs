@@ -5,12 +5,14 @@ import Struct.Value
 
 type Name = String
 
+data Expr = Aexp AExpr
+  | Bexp BExpr
+  deriving (Show, Eq)
+
 data Stmt = Stmts Stmt Stmt
-  | AEval AExpr
-  | BEval BExpr
+  | Eval Expr
   | Hist AExpr
-  | ASet  Name  AExpr
-  | BSet  Name  BExpr
+  | Set  Name  Expr
   | If    BExpr Stmt
   | While BExpr Stmt
   | For AExpr BExpr Stmt Stmt
@@ -63,23 +65,24 @@ pStmt =  do i <- pIf
                    return w
             ||| do n <- identifier
                    symbol "="
-                   v <- pAExpr
-                   return (ASet n v)
-            ||| do n <- identifier
-                   symbol "="
-                   v <- pBExpr
-                   return (BSet n v)
+                   v <- pExpr
+                   return (Set n v)
             ||| do n<- identifier
                    symbol "()"
                    return (Exec n)
             ||| do symbol "$"
                    e <- pAExpr
                    return (Hist e)
-            ||| do e <- pAExpr
-                   return (AEval e)
-            ||| do e <- pBExpr
-                   return (BEval e)
-       
+            ||| do e <- pExpr
+                   return (Eval e)
+                  
+
+pExpr :: Parser Expr
+pExpr = do b <- pBExpr
+           return (Bexp b)
+           ||| do a <- pAExpr
+                  return (Aexp a)
+ 
 
 pFunc :: Parser Stmt
 pFunc = do symbol "func"

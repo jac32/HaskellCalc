@@ -53,31 +53,19 @@ processStmt st (Stmts x y) = do st' <- processStmt st  x
                                 return st'
 
 -- Processing arithmetic and boolean expressions
-processStmt st (AEval e) = do outputStrLn(show val)
-                              case val of
-                                Right x -> return (addHistory st (AEval e) x)
-                                Left x -> do outputStrLn ("Could not evaluate: " ++ x)
-                                             return st
-                                where val = (evalA (vars st) e)
-
-processStmt st (BEval e) = do outputStrLn(show val)
-                              case val of
-                                Right x -> return (addHistory st (BEval e) x)
-                                where val = (evalB (vars st) e)
+processStmt st (Eval e) = case val of
+                            Right x -> return (addHistory st (Eval e) x)
+                            Left x -> do outputStrLn ("Could not evaluate: " ++ x)
+                                         return st
+                            where val = (eval (vars st) e)
 
 -- Processing arithmetic and boolean assignments
-processStmt st (ASet var e) = case (evalA (vars st) e) of
-  Right x -> do let st' = addHistory (updateVars var x st) (ASet var e) x
+processStmt st (Set var e) = case (eval (vars st) e) of
+  Right x -> do let st' = addHistory (updateVars var x st) (Set var e) x
                 return st'
   Left x -> do outputStrLn x
                return st
-                                                          
-processStmt st (BSet var e) = case (evalB (vars st) e) of
-  Right x -> do let st' = addHistory (updateVars var x st) (BSet var e) x
-                return st'
-  Left x -> do outputStrLn x
-               return st
-
+                                                         
 
 -- Processing loops and conditionals
 processStmt st (If cond stmt) = case (evalB (vars st) cond) of

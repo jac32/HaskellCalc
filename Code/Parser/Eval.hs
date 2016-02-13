@@ -11,7 +11,18 @@ evalA :: Tree (Name, Value)->
 evalB :: Tree (Name, Value)->     
          BExpr ->               
          Either String Value
-  
+ 
+eval :: Tree(Name, Value) ->
+        Expr ->
+        Either String Value
+
+-----------------------------------------
+--Generic Evaluations 
+------------------------------------------
+
+eval vars (Aexp e) = evalA vars e
+eval vars (Bexp e) = evalB vars e
+
 -----------------------------------------------------------------
 -- Boolean Expression Evaluations
 -----------------------------------------------------------------
