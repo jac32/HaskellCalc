@@ -24,8 +24,6 @@ eval vars (Aexp e) = evalA vars e
 
 eval vars (Bexp e) = evalB vars e
 
---eval vars (Var v)  = (valOf v vars)
-
 -----------------------------------------------------------------
 -- Boolean Expression Evaluations
 -----------------------------------------------------------------
