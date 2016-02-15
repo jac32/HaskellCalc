@@ -163,7 +163,9 @@ pBTerm = do b <- bool
 pAExpr :: Parser AExpr
 pAExpr = do t <- pATerm
             do e <- (pLowPrec t)
-               return e
+               do e2 <- pOpPrec e
+                  return e2
+                  ||| return e
 
 
 pLowPrec :: AExpr -> Parser AExpr 
@@ -223,7 +225,7 @@ pPow f = do symbol "^"
                ||| return (Pow f t)
 
 pMod :: AExpr -> Parser AExpr
-pMod f = do symbol "/"
+pMod f = do symbol "%"
             t <- pFactor
             do e <- pOpPrec (Mod f t)
                return e
@@ -250,14 +252,14 @@ pNeg = do symbol "-"
 
 pAdd :: AExpr -> Parser AExpr
 pAdd t = do symbol "+"
-            e <- pAExpr
+            e <- pATerm
             do f <- (pLowPrec (Add t e))
                return f
                ||| return (Add t e)
 
 pSub :: AExpr -> Parser AExpr
 pSub t = do symbol "-"
-            e <- pAExpr
+            e <- pATerm
             do f <- (pLowPrec (Sub t e))
                return f
                ||| return (Sub t e)
