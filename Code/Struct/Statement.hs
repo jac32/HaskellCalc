@@ -191,9 +191,12 @@ pAExpr = do t <- pATerm
                    
 pATerm :: Parser AExpr
 pATerm = do f <- pFactor 
-            do symbol "*"
+            do symbol "^"
                t <- pATerm
-               return (Mul f t)
+               return (Pow f t)  
+               ||| do symbol "*"
+                      t <- pATerm
+                      return (Mul f t)
                ||| do symbol "/"
                       t <- pATerm
                       return (Div f t)
