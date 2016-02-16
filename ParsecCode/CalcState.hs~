@@ -26,22 +26,23 @@ updateFuncs :: Name -> [Name] ->
                Stmt -> CalcState -> CalcState
 updateFuncs n args stmt st = st { funcs = insert (n, (Function args stmt)) (funcs st) }
 
-getN :: [a] -> Integer -> Either String a
-getN (x:xs) 0 = Right x
-getN (x:xs) n = getN xs $ n-1
-getN [] n = Left "Index out of bounds"
-
 genFuncState :: CalcState -> Function -> [Value] -> CalcState
 genFuncState st function values = initState { funcs = (funcs st), 
                                               vars  = (insertList pairs Empty) }
     where names  = args function
           pairs  = zip names values
+    
+
+
+ 
                                                  
                                      
 -- Add a command to the command history in the state
-addHistory :: CalcState -> Stmt -> CalcState
-addHistory state command =  state { numCalcs = (numCalcs state)  + 1,
+addHistory :: CalcState -> Stmt -> Value -> CalcState
+addHistory state command value =
+  updateVars "it" value state { numCalcs = (numCalcs state)  + 1,
                                 history = (history state) ++ [command] }
                                                                      
-fetchHistory :: CalcState -> Integer -> Either String Stmt
-fetchHistory st x = getN (history st) x
+
+fetchHistory :: Int -> CalcState -> Stmt
+fetchHistory x st = (history st) !! x

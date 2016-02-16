@@ -12,6 +12,7 @@ apply (BO And)     = andV
 apply (BO Or)      = orV
 apply (RO Less)    = ltV
 apply (RO Greater) = gtV
+apply (RO Equal)   = eqV
 
 
 addV                             :: Value -> Value -> Either String Value
@@ -64,12 +65,12 @@ orV  _ _                         = Left "Logical OR on incompatible types"
 ------------------------------------------------------------
 -- Relational function definitions
 
--- eqV                              :: Value -> Value -> Either String Value
--- eqV (I x) (I y)                 = Right (B (x==y))
--- eqV (F x) (F y)                 = Right (B (x==y))
--- eqV (F x) (I y)                 = Right (B (x==(fromIntegral(y))))
--- eqV (I x) (F y)                 = Right (B (y==(fromIntegral(x))))
--- eqV _ _                         = Left "Equality check of incompatible types."
+eqV                              :: Value -> Value -> Either String Value
+eqV (I x) (I y)                 = Right (B (x==y))
+eqV (D x) (D y)                 = Right (B (x==y))
+eqV (D x) (I y)                 = Right (B (x==(fromIntegral(y))))
+eqV (I x) (D y)                 = Right (B (y==(fromIntegral(x))))
+eqV _ _                         = Left "Equality check of incompatible types."
 
 gtV                              :: Value -> Value -> Either String Value
 gtV (I x) (I y)                 = Right (B (x>y))

@@ -31,7 +31,7 @@ data BExpr = BoolConst Bool
                  
 data BBinOp = And | Or deriving (Show)
 
-data RBinOp = Greater | Less deriving (Show)
+data RBinOp = Greater | Equal | Less deriving (Show)
 
 -- Types representing Arithmetic expressions and operations
 data AExpr = Var String
@@ -49,6 +49,10 @@ data Stmt = Stmts [Stmt]
   | Func Name ArgNames Stmt
   | Exec Name ArgVals
   | Print Expr
+  | Hist Integer
+  | Load String
+  | Help
+  | Quit 
     deriving (Show)
 
 languageDef =
@@ -57,7 +61,10 @@ languageDef =
            , Token.commentLine   = "//"
            , Token.identStart    = letter
            , Token.identLetter   = alphaNum
-           , Token.reservedNames = [ "print"
+           , Token.reservedNames = [ "help"
+                                   , "load"
+                                   , "quit"
+                                   , "print"
                                    , "defun"
                                    , "if"
                                    , "then"
@@ -68,8 +75,9 @@ languageDef =
                                    , "false"
                                    , "not"
                                    , "and"
-                                   , "or" ]
-           , Token.reservedOpNames = [ "+", "-", "*", "/", "=",
+                                   , "or"
+                                   , "!"]
+           , Token.reservedOpNames = [ "+", "-", "*", "/", "=", "==",
                                       "<", ">", "and", "or", "not" ]
            } 
                                       
@@ -85,6 +93,8 @@ float      = Token.float      lexer
 semi       = Token.semi       lexer
 comma      = Token.comma      lexer
 whiteSpace = Token.whiteSpace lexer
+stringLiteral = Token.stringLiteral lexer
+
 
 whileParser :: Parser Stmt
 whileParser = whiteSpace >> statement
@@ -98,7 +108,11 @@ statements =  do list <- (sepBy1 statement' semi)
                  return $ if length list == 1 then head list else Stmts list
                
 statement' :: Parser Stmt
-statement' = funcStmt
+statement' = try histStmt
+  <|> quitStmt
+  <|> loadStmt
+  <|> helpStmt
+  <|> funcStmt
   <|> ifStmt
   <|> whileStmt
   <|> printStmt
@@ -112,7 +126,6 @@ argVals :: Parser ArgVals
 argVals = do list <- (sepBy1 expression comma)
              return list              
 
-
 funcStmt :: Parser Stmt
 funcStmt = do reserved "defun"
               name <- identifier
@@ -125,6 +138,25 @@ execStmt = do name <- identifier
               argVals <- parens argVals
               return $ Exec name argVals
 
+
+histStmt :: Parser Stmt
+histStmt = do reserved "!"
+              arg <- integer
+              return $ Hist arg
+
+quitStmt :: Parser Stmt
+quitStmt = do reserved "quit"
+              return Quit
+
+helpStmt :: Parser Stmt
+helpStmt = do reserved "help"
+              return Help
+
+loadStmt :: Parser Stmt
+loadStmt = do reserved "load"
+              file <- stringLiteral
+              return $ Load file
+              
 printStmt :: Parser Stmt
 printStmt = do reserved "print"
                arg <- parens expression
@@ -188,7 +220,7 @@ rExpression = do a1 <- aExpression
                  return $ RBinary op a1 a2
 
 relation = (reservedOp ">" >> return Greater)
-  <|> (reservedOp "<" >> return Less)
+  <|> (reservedOp "<" >> return Less) <|> (reservedOp "==" >> return Equal)
 
 parseString :: String -> Stmt
 parseString str = case parse whileParser "" str of
