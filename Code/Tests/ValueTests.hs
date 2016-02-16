@@ -271,4 +271,45 @@ modValueTests = TestList $ map TestCase [
    (assertEqual "Mod operation on incompatible type Float and True"
    (Left "Modulo with incompatible types." :: Either String Value)
    (modV (F 7.2) (B True)))
-   ]                   
+   ]
+ 
+absValueTests = TestList $ map TestCase [
+   (assertEqual "Abs operation on positive int"
+   (Right (I 2) :: Either String Value)
+   (absV (I 2))),
+  
+   (assertEqual "Abs operation on negative int"
+   (Right (I 2) :: Either String Value)
+   (absV (I (-2)))),
+  
+   (assertEqual "Abs operation on positive float"
+   (Right (F 2.43) :: Either String Value)
+   (absV (F 2.43))),
+  
+   (assertEqual "Abs operation on negative float"
+   (Right (F 2.43) :: Either String Value)
+   (absV (F (-2.43)))),
+   
+   (assertEqual "Abs operation on True"
+   (Left "Absolute Value of incompatible type" :: Either String Value)
+   (absV (B True)))
+  ] 
+
+
+powValueTests = TestList $ map TestCase [
+   (assertEqual "Pow operation on int and float"
+   (Left "Exponent Operation with incompatible types." :: Either String Value)
+   (powV (I 2) (F 2.2) )),
+
+   (assertEqual "Pow operation on float 0.5 and int 2"
+   (Right (F 0.25) :: Either String Value)
+   (powV (F 0.5) (I 2 ))),
+ 
+   (assertEqual "Pow operation on int 5 and int 2"
+   (Right (I 25) :: Either String Value)
+   (powV (I 5) (I 2 ))),
+  
+   (assertEqual "Pow operation on incompatible type Float and True"
+   (Left "Exponent Operation with incompatible types." :: Either String Value)
+   (powV (F 7.2) (B True)))
+   ]                  

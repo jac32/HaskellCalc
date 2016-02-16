@@ -7,7 +7,7 @@ bstTests = TestList [insertTests, retrievalTests, removalTests, smallestNodeTest
 
 valueTests = TestList [additionValueTests, subtractionValueTests, multiplicationValueTests, 
                        eqValueTests,gtValueTests,ltValueTests,divisionValueTests, notValueTests, andValueTests, orValueTests,
-                       factValueTests, modValueTests, sqrtValueTests]
+                       factValueTests, modValueTests, sqrtValueTests, modValueTests,powValueTests,absValueTests]
 
 parseTests = TestList [arithmeticTests, additionTests, subtractionTests]
 
