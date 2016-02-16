@@ -72,8 +72,8 @@ processStmt st (If cond stmt) = case (evalB (vars st) cond) of
 
 processStmt st (While cond stmt) = case (evalB (vars st) cond) of
   Right (B True) -> do st' <- processStmt st stmt
-                       st' <- processStmt st' (While cond stmt)
-                       return st'
+                       st'' <- processStmt st' (While cond stmt)
+                       return st''
   Right (B False) -> return st
 
 
@@ -101,12 +101,16 @@ processStmt st (Func name stmt) = do let st' =  updateFuncs name stmt st
                                      return st'
                                      
 processStmt st (Exec name) = case (valOf name (funcs st)) of
-  Right x -> do st' <- processStmt initState x
+  Right x -> do st' <- processStmt st x
                 let st'' = addHistory st (Exec name)  (head (results st'))
                 return st''
   Left x -> do outputStrLn (show x)
                return st
 
+
+processStmt st (Print stmt) = do st' <- processStmt st stmt
+                                 outputStrLn (show (head (results st')))
+                                 return st'
 
 processStmt st x = do outputStrLn (show x)
                       return st    
@@ -114,12 +118,13 @@ processStmt st x = do outputStrLn (show x)
 processStmts :: State -> Stmt -> InputT IO ()
 processStmts st (Stmts x y) = do st' <- processStmt st  x
                                  st' <- processStmt st' y
-                                 outputStrLn (show (head (results st')))
                                  prompt st'
+
 processStmts st stmt = do st' <- processStmt st stmt
-                          outputStrLn (show (head (results st')))
                           prompt st'
-  
+ 
+
+ 
 {-| Helper function for the main REPL.
 Prints prompt with current calculation count and retrieves the users input
 Removes clutter from 'repl'
@@ -181,4 +186,5 @@ executeFile st adr = do contents <- liftIO $ readFile adr
 
   
 printHelp :: InputT IO ()
-printHelp = outputStrLn "No help text available"
+printHelp = do contents <- liftIO $ readFile "README.txt"
+               outputStrLn contents

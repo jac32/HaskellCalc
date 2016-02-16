@@ -11,6 +11,7 @@ data Expr = Aexp AExpr
 
 data Stmt = Stmts Stmt Stmt
   | Eval Expr
+  | Print Stmt
   | Hist AExpr
   | Set  Name  Expr
   | If    BExpr Stmt
@@ -65,7 +66,9 @@ pStmt =  do i <- pIf
             ||| do f <- pFunc
                    return f
             ||| do f <- pFor
-                   return f          
+                   return f
+            ||| do p <- pPrint
+                   return p         
             ||| do w <- pWhile
                    return w
             ||| do s <- pSet
@@ -101,23 +104,23 @@ pExec = do n<- identifier
 pFunc :: Parser Stmt
 pFunc = do symbol "func"
            n <- identifier 
-           symbol "="
-           symbol "{"
-           s <- pStmts
-           symbol "}"
+           s <- pBody 
            return (Func n s)
 
- 
+
 pIf :: Parser Stmt
 pIf = do symbol "if"
-         symbol "(" 
-         b<- pBExpr
-         symbol ")"
-         symbol "{"
-         s <- pStmts
-         symbol "}"
+         b <- pBBrac
+         s <- pBody
          return (If b s)
 
+pPrint :: Parser Stmt
+pPrint = do symbol "print"
+            s <- pStmt 
+            return (Print s)
+
+
+ 
   
 pFor :: Parser Stmt
 pFor =  do symbol "for"
@@ -128,41 +131,31 @@ pFor =  do symbol "for"
            symbol ";"
            a2 <- pStmt
            symbol ")"
-           symbol "{"
-           s <- pStmts
-           symbol "}"
+           s <- pBody
            return (For (AVar a1) b a2 s)
 
  
 pWhile :: Parser Stmt
 pWhile =  do symbol "while"
-             symbol "("
-             b <- pBExpr
-             symbol ")"
-             symbol "{"
-             s <- pStmts
-             symbol "}"
+             b <- pBBrac 
+             s <- pBody
              return (While b s)
 
 pBExpr :: Parser BExpr
-pBExpr = do b1 <- pBTerm
-            do symbol "&&"
-               b2 <- pBExpr
-               return (And b1 b2)
-               ||| do symbol "||"
-                      b2 <- pBExpr
-                      return (Or b1 b2)
-               ||| return b1
+pBExpr = do b <- pBTerm
+            do e <- pAnd b
+               return e
+               ||| do e <- pOr b
+                      return e
+                      ||| return b
           
                   
             
 pBTerm :: Parser BExpr
 pBTerm = do b <- bool
             return (Const b)
-            ||| do symbol "("
-                   e <- pBExpr
-                   symbol ")"
-                   return e
+            ||| do e <- pBBrac
+                   return e 
             ||| do symbol "!"
                    e <-pBExpr
                    return (Not e)
@@ -184,56 +177,60 @@ pBTerm = do b <- bool
                
 pAExpr :: Parser AExpr
 pAExpr = do t <- pATerm
-            do symbol "+"
-               e <- pAExpr
-               return (Add t e)
-               ||| do symbol "-"
-                      e <- pAExpr
-                      return (Sub t e)
-               ||| return t
-            ||| do s <- identifier
-                   return (Val (S s))
-                   
+            do e <- (pLowPrec t)
+               do e2 <- pOpPrec e
+                  return e2
+                  ||| return e
+
+
+pLowPrec :: AExpr -> Parser AExpr 
+pLowPrec t = do e <- pAdd t
+                return e
+                ||| do e <- pSub t
+                       return e
+                ||| return t
+
+
 pATerm :: Parser AExpr
 pATerm = do f <- pFactor 
-            do symbol "*"
-               t <- pATerm
-               return (Mul f t)
-               ||| do symbol "/"
-                      t <- pATerm
-                      return (Div f t)
-               ||| do symbol "%"
-                      t <- pATerm
-                      return (Mod f t)
-               ||| return f
+            do e <- pOpPrec f
+               return e
+
+pOpPrec :: AExpr -> Parser AExpr
+pOpPrec f = do e <- pDiv f 
+               return e
+               ||| do e <- pMul f
+                      return e
+               ||| do e <- pMod f
+                      return e
+               ||| return f 
+              
               
 pFactor :: Parser AExpr
 pFactor = do f <- float
-             return  (Val (F f))
+             do e <- pPow (Val (F f))
+                return e
+                ||| return  (Val (F f))
              ||| do i <- integer
-                    do symbol "!"
-                       return (Fact (Val (I i)))
+                    do e <-pFact i
+                       return e
+                       ||| do e <- pPow (Val (I i))
+                              return e
                        |||return (Val (I i))
-             ||| do symbol "-"
-                    e <- pFactor
-                    return (Neg e)
+             ||| do e <- pNeg
+                    return e 
              ||| do v <- symbol "it"
                     return (AVar v)
              ||| do v <- identifier
                     return (AVar v)
-             ||| do symbol "("
-                    e <- pAExpr
-                    symbol ")"
+             ||| do e <- pBrac
                     return e
-             ||| do symbol "|"
-                    e <- pAExpr
-                    symbol "|"
-                    return (Abs e)
+             ||| do e <- pAbs
+                    return e 
              ||| do symbol "Sqrt"
-                    symbol "("
-                    e <- pAExpr
-                    symbol ")"
+                    e <- pBrac 
                     return (Sqrt e)
+<<<<<<< HEAD
              ||| do symbol "Sin"
                     symbol "("
                     e <- pAExpr
@@ -260,5 +257,95 @@ pFactor = do f <- float
                     symbol ")"
                     return (Log e)
                           
+=======
+>>>>>>> c7794ac767e19824ce6f1b2c8c34ccf47b8bcbe6
 
-             
+
+pPow :: AExpr -> Parser AExpr
+pPow f = do symbol "^"
+            t <- pFactor
+            do e <- pOpPrec (Pow f t)
+               return e
+               ||| return (Pow f t)
+
+pMod :: AExpr -> Parser AExpr
+pMod f = do symbol "%"
+            t <- pFactor
+            do e <- pOpPrec (Mod f t)
+               return e
+               ||| return (Mod f t)
+
+pDiv :: AExpr -> Parser AExpr
+pDiv f = do symbol "/"
+            t <- pFactor
+            do e <- pOpPrec (Div f t)
+               return e
+               ||| return (Div f t)
+ 
+pMul :: AExpr -> Parser AExpr
+pMul f = do symbol "*"
+            t <- pFactor
+            do e <- pOpPrec (Mul f t)
+               return e
+               ||| return (Mul f t)
+          
+pNeg :: Parser AExpr
+pNeg = do symbol "-"
+          e <- pFactor
+          return (Neg e)
+
+pAdd :: AExpr -> Parser AExpr
+pAdd t = do symbol "+"
+            e <- pATerm
+            do f <- (pLowPrec (Add t e))
+               return f
+               ||| return (Add t e)
+
+pSub :: AExpr -> Parser AExpr
+pSub t = do symbol "-"
+            e <- pATerm
+            do f <- (pLowPrec (Sub t e))
+               return f
+               ||| return (Sub t e)
+
+pAnd :: BExpr -> Parser BExpr 
+pAnd b1 = do symbol "&&"
+             b2 <- pBExpr
+             return (And b1 b2)
+
+pOr :: BExpr -> Parser BExpr 
+pOr b1 = do symbol "||"
+            b2 <- pBExpr
+            return (Or b1 b2)
+
+
+pBody :: Parser Stmt
+pBody = do symbol "{"
+           s <- pStmts
+           symbol "}"
+           return s
+
+
+
+pBBrac :: Parser BExpr 
+pBBrac = do symbol "("
+            e <- pBExpr
+            symbol ")"
+            return e
+
+pBrac :: Parser AExpr 
+pBrac = do symbol "("
+           e <- pAExpr
+           symbol ")"
+           return e
+
+
+pAbs :: Parser AExpr 
+pAbs = do symbol "|"
+          e <- pAExpr
+          symbol "|"
+          return (Abs e)
+
+pFact :: Int -> Parser AExpr
+pFact i = do symbol "!"
+             return (Fact (Val (I i)))
