@@ -1,6 +1,7 @@
 module Eval where
 
 import Control.Monad.IO.Class
+import Paths_HaskellCalc
 import Text.ParserCombinators.Parsec
 import System.Console.Haskeline
 import CalcState
@@ -29,7 +30,8 @@ parseStatement st input =
 process :: CalcState -> Stmt -> InputT IO (Either String CalcState)
 
 process st Quit = return $ Left "exit"
-process st Help = do contents <- liftIO $ readFile "../README.md"
+process st Help = do path <- liftIO $ getDataFileName "README.md"
+                     contents <- liftIO $ readFile path
                      outputStrLn contents
                      return $ Right st
                      
