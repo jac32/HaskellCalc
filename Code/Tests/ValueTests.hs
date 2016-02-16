@@ -175,7 +175,15 @@ eqValueTests = TestList $ map TestCase [
 
    (assertEqual "EQ operation on Floats2.2==2.2"
    (Right (B True) :: Either String Value)
-   (eqV ((F 2.2)) ((F 2.2))))
+   (eqV ((F 2.2)) ((F 2.2)))),
+
+   (assertEqual "EQ operation on Bools True==True"
+   (Left "Equality check of incompatible types." :: Either String Value)
+   (eqV ((B True)) ((B True)))),
+
+   (assertEqual "EQ operation on incompatible types 5==True"
+   (Left "Equality check of incompatible types." :: Either String Value)
+   (eqV ((I 5)) ((B True))))
   ]
 
 
@@ -194,8 +202,11 @@ ltValueTests = TestList $ map TestCase [
    
    (assertEqual "LT operation on float and int 2.0 < 3"
    (Right (B True) :: Either String Value)
-   (ltV ((F 2.0)) ((I 3))))
+   (ltV ((F 2.0)) ((I 3)))),
    
+   (assertEqual "Lt operation on incompatible types 5<True"
+   (Left "Order check of incompatible types." :: Either String Value)
+   (ltV ((I 5)) ((B True))))
   ]
 
 gtValueTests = TestList $ map TestCase [
@@ -213,8 +224,92 @@ gtValueTests = TestList $ map TestCase [
    
    (assertEqual "GT operation on float and int 3.0 > 2"
    (Right (B True) :: Either String Value)
-   (gtV ((F 3.0)) ((I 2))))
+   (gtV ((F 3.0)) ((I 2)))),
+   
+   (assertEqual "Gt operation on incompatible types 5>True"
+   (Left "Order check of incompatible types." :: Either String Value)
+   (gtV ((I 5)) ((B True))))
    ] 
 
-                       
-                      
+sqrtValueTests = TestList $ map TestCase [
+   (assertEqual "sqrt operation on float 2.2"
+   (Right (F 1.4832398) :: Either String Value)
+   (sqrtV (F 2.2) )),
+
+   (assertEqual "sqrt operation on int 9"
+   (Right (F 3.0) :: Either String Value)
+   (sqrtV (I 9) )),
+  
+   (assertEqual "Sqrt operation on incompatible type True"
+   (Left "Square root with incompatible types." :: Either String Value)
+   (sqrtV (B True)))
+   ] 
+
+factValueTests = TestList $ map TestCase [
+   (assertEqual "fact operation on float 2.2"
+   (Left "Factorial with incompatible types." :: Either String Value)
+   (factV (F 2.2) )),
+
+   (assertEqual "fact operation on int 5"
+   (Right (I 120) :: Either String Value)
+   (factV (I 5) )),
+  
+   (assertEqual "Fact operation on incompatible type True"
+   (Left "Factorial with incompatible types." :: Either String Value)
+   (factV (B True)))
+   ]
+                     
+modValueTests = TestList $ map TestCase [
+   (assertEqual "Mod operation on int and float"
+   (Left "Modulo with incompatible types." :: Either String Value)
+   (modV (I 2) (F 2.2) )),
+
+   (assertEqual "mod operation on int 5 and 2"
+   (Right (I 1) :: Either String Value)
+   (modV (I 5) (I 2 ))),
+  
+   (assertEqual "Mod operation on incompatible type Float and True"
+   (Left "Modulo with incompatible types." :: Either String Value)
+   (modV (F 7.2) (B True)))
+   ]
+ 
+absValueTests = TestList $ map TestCase [
+   (assertEqual "Abs operation on positive int"
+   (Right (I 2) :: Either String Value)
+   (absV (I 2))),
+  
+   (assertEqual "Abs operation on negative int"
+   (Right (I 2) :: Either String Value)
+   (absV (I (-2)))),
+  
+   (assertEqual "Abs operation on positive float"
+   (Right (F 2.43) :: Either String Value)
+   (absV (F 2.43))),
+  
+   (assertEqual "Abs operation on negative float"
+   (Right (F 2.43) :: Either String Value)
+   (absV (F (-2.43)))),
+   
+   (assertEqual "Abs operation on True"
+   (Left "Absolute Value of incompatible type" :: Either String Value)
+   (absV (B True)))
+  ] 
+
+
+powValueTests = TestList $ map TestCase [
+   (assertEqual "Pow operation on int and float"
+   (Left "Exponent Operation with incompatible types." :: Either String Value)
+   (powV (I 2) (F 2.2) )),
+
+   (assertEqual "Pow operation on float 0.5 and int 2"
+   (Right (F 0.25) :: Either String Value)
+   (powV (F 0.5) (I 2 ))),
+ 
+   (assertEqual "Pow operation on int 5 and int 2"
+   (Right (I 25) :: Either String Value)
+   (powV (I 5) (I 2 ))),
+  
+   (assertEqual "Pow operation on incompatible type Float and True"
+   (Left "Exponent Operation with incompatible types." :: Either String Value)
+   (powV (F 7.2) (B True)))
+   ]                  

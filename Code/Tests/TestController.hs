@@ -6,7 +6,8 @@ import Tests.ParseTests
 bstTests = TestList [insertTests, retrievalTests, removalTests, smallestNodeTests]
 
 valueTests = TestList [additionValueTests, subtractionValueTests, multiplicationValueTests, 
-                       eqValueTests,gtValueTests,ltValueTests,divisionValueTests, notValueTests, andValueTests, orValueTests]
+                       eqValueTests,gtValueTests,ltValueTests,divisionValueTests, notValueTests, andValueTests, orValueTests,
+                       factValueTests, modValueTests, sqrtValueTests, modValueTests,powValueTests,absValueTests]
 
 parseTests = TestList [arithmeticTests, additionTests, subtractionTests]
 
