@@ -11,6 +11,7 @@ data Expr = Aexp AExpr
 
 data Stmt = Stmts Stmt Stmt
   | Eval Expr
+  | Print Stmt
   | Hist AExpr
   | Set  Name  Expr
   | If    BExpr Stmt
@@ -42,6 +43,11 @@ data AExpr = Val Value
   | Pow AExpr AExpr
   | Fact AExpr
   | Sqrt AExpr
+  | Sine AExpr
+  | Cos AExpr
+  | Sinh AExpr
+  | Cosh AExpr
+  | Log AExpr
     deriving (Show, Eq)
 
 
@@ -60,7 +66,9 @@ pStmt =  do i <- pIf
             ||| do f <- pFunc
                    return f
             ||| do f <- pFor
-                   return f          
+                   return f
+            ||| do p <- pPrint
+                   return p         
             ||| do w <- pWhile
                    return w
             ||| do s <- pSet
@@ -99,13 +107,20 @@ pFunc = do symbol "func"
            s <- pBody 
            return (Func n s)
 
- 
+
 pIf :: Parser Stmt
 pIf = do symbol "if"
          b <- pBBrac
          s <- pBody
          return (If b s)
 
+pPrint :: Parser Stmt
+pPrint = do symbol "print"
+            s <- pStmt 
+            return (Print s)
+
+
+ 
   
 pFor :: Parser Stmt
 pFor =  do symbol "for"
@@ -212,9 +227,19 @@ pFactor = do f <- float
                     return e
              ||| do e <- pAbs
                     return e 
-             ||| do symbol "Sqrt"
-                    e <- pBrac 
-                    return (Sqrt e)
+             ||| do e <- pSqrt
+                    return e 
+             ||| do e <- pSin
+                    return e
+             ||| do e <- pCos
+                    return e
+             ||| do e <- pSinh
+                    return e 
+             ||| do e <- pCosh
+                    return e 
+             ||| do e <- pLog
+                    return e 
+                          
 
 
 pPow :: AExpr -> Parser AExpr
@@ -270,7 +295,7 @@ pAnd b1 = do symbol "&&"
              return (And b1 b2)
 
 pOr :: BExpr -> Parser BExpr 
-pOr b1 = do symbol "&&"
+pOr b1 = do symbol "||"
             b2 <- pBExpr
             return (Or b1 b2)
 
@@ -280,7 +305,6 @@ pBody = do symbol "{"
            s <- pStmts
            symbol "}"
            return s
-
 
 
 pBBrac :: Parser BExpr 
@@ -293,7 +317,9 @@ pBrac :: Parser AExpr
 pBrac = do symbol "("
            e <- pAExpr
            symbol ")"
-           return e
+           do p <- pPow e
+              return p
+              |||return e
 
 
 pAbs :: Parser AExpr 
@@ -305,3 +331,35 @@ pAbs = do symbol "|"
 pFact :: Int -> Parser AExpr
 pFact i = do symbol "!"
              return (Fact (Val (I i)))
+
+pSqrt :: Parser AExpr
+pSqrt = do symbol "sqrt"
+           e <- pBrac 
+           return (Sqrt e)
+      
+pSin :: Parser AExpr
+pSin = do symbol "sin"
+          e <- pBrac
+          return (Sine e)
+
+pCos :: Parser AExpr
+pCos = do symbol "cos"
+          e <- pBrac
+          return (Cos e)       
+
+
+pSinh :: Parser AExpr
+pSinh = do symbol "sinh"
+           e <- pBrac
+           return (Sinh e)
+            
+pCosh :: Parser AExpr
+pCosh = do symbol "cosh"
+           e<-pBrac
+           return (Cosh e)
+             
+pLog :: Parser AExpr
+pLog = do symbol "log"
+          e<-pBrac
+          return (Log e)
+              
