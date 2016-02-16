@@ -164,8 +164,7 @@ repl st inp
                 prompt st
   | op == 'h' = do printHelp
                    prompt st
-  | op == 'l' = do st' <- executeFile st arg
-                   outputStrLn ("Loaded file: " ++ arg)
+  | op == 'l' = executeFile st arg
   | op == 'q' = outputStrLn "Bye!"
   | otherwise = do outputStrLn "Not a recognised command"
                    prompt st
@@ -178,7 +177,8 @@ repl st inp
 executeFile :: State -> String -> InputT IO ()
 executeFile st adr = do contents <- liftIO $ readFile adr
                         case parse pStmts contents of
-                          [(cmd, "")] -> processStmts st cmd
+                          [(cmd, "")] -> do outputStrLn ("Loaded file: " ++ adr)
+                                            processStmts st cmd
                         
                           [(_, x)] -> do outputStrLn ("Parse Error - remaining text: " ++ x)
                                          
