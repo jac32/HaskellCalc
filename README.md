@@ -10,10 +10,10 @@ What
 
 Haskell Calc is a calculator written in haskell which can be interacted with via the command line.
 It supports:
-	- Standard Arithmetic Operations: addition, subtraction, multiplication and division.
-	- Boolean Operations: Not, And and Or
-	- Relational Operations: Less than, Greater than and Equal to 
-	- Simple scripting including : conditionals, looping and functions
+- Standard Arithmetic Operations: addition, subtraction, multiplication and division.
+- Boolean Operations: Not, And and Or
+- Relational Operations: Less than, Greater than and Equal to 
+- Simple scripting including : conditionals, looping and functions
 	
 How 
 ----
