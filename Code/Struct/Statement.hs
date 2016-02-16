@@ -11,6 +11,7 @@ data Expr = Aexp AExpr
 
 data Stmt = Stmts Stmt Stmt
   | Eval Expr
+  | Print Stmt
   | Hist AExpr
   | Set  Name  Expr
   | If    BExpr Stmt
@@ -60,7 +61,9 @@ pStmt =  do i <- pIf
             ||| do f <- pFunc
                    return f
             ||| do f <- pFor
-                   return f          
+                   return f
+            ||| do p <- pPrint
+                   return p         
             ||| do w <- pWhile
                    return w
             ||| do s <- pSet
@@ -99,13 +102,20 @@ pFunc = do symbol "func"
            s <- pBody 
            return (Func n s)
 
- 
+
 pIf :: Parser Stmt
 pIf = do symbol "if"
          b <- pBBrac
          s <- pBody
          return (If b s)
 
+pPrint :: Parser Stmt
+pPrint = do symbol "print"
+            s <- pStmt 
+            return (Print s)
+
+
+ 
   
 pFor :: Parser Stmt
 pFor =  do symbol "for"
