@@ -42,6 +42,7 @@ data AExpr = Var String
 
 data ABinOp = Add | Sub | Mul | Div deriving (Show)
 
+-- | Algebraic Data type for different kinds of statements
 data Stmt = Stmts [Stmt]
   | Assign Name Expr
   | If BExpr Stmt Stmt
@@ -55,6 +56,7 @@ data Stmt = Stmts [Stmt]
   | Quit 
     deriving (Show)
 
+-- | definitions of different parts of the language
 languageDef =
   emptyDef { Token.commentStart  = "/*"
            , Token.commentEnd    = "*/"
@@ -118,14 +120,18 @@ statement' = try histStmt
   <|> printStmt
   <|> try assignStmt <|> execStmt
 
+
+-- | parser for argument names, used during function declarations
 argNames :: Parser ArgNames
 argNames = do list <- (sepBy1 identifier comma)
               return list
 
+-- | parser for argument values, used during function execution
 argVals :: Parser ArgVals
 argVals = do list <- (sepBy1 expression comma)
              return list              
 
+-- | parser for function definitions
 funcStmt :: Parser Stmt
 funcStmt = do reserved "defun"
               name <- identifier
@@ -133,36 +139,42 @@ funcStmt = do reserved "defun"
               stmt <- statement
               return $ Func name argNames stmt
               
+-- | parser for function executions
 execStmt :: Parser Stmt
 execStmt = do name <- identifier
               argVals <- parens argVals
               return $ Exec name argVals
 
-
+-- | parser for history statements
 histStmt :: Parser Stmt
 histStmt = do reserved "!"
               arg <- integer
               return $ Hist arg
 
+-- | parser for "quit" statement
 quitStmt :: Parser Stmt
 quitStmt = do reserved "quit"
               return Quit
 
+-- | parser for "help" statement
 helpStmt :: Parser Stmt
 helpStmt = do reserved "help"
               return Help
 
+-- | parser for "load" statement
 loadStmt :: Parser Stmt
 loadStmt = do reserved "load"
               file <- stringLiteral
               return $ Load file
               
+-- | parser for "print" statement
 printStmt :: Parser Stmt
 printStmt = do reserved "print"
                arg <- parens expression
                return $ Print arg
                
 
+-- | parser for "if" statement
 ifStmt :: Parser Stmt
 ifStmt = do reserved "if"
             cond <- bExpression
@@ -172,12 +184,14 @@ ifStmt = do reserved "if"
             stmt2 <- statement
             return $ If cond stmt1 stmt2
 
+-- | parser for "while" statement
 whileStmt :: Parser Stmt
 whileStmt = do reserved "while"
                cond <- bExpression
                stmt <- statement
                return $ While cond stmt
-               
+              
+-- | parser for "assign" statement 
 assignStmt :: Parser Stmt
 assignStmt = do var <- identifier
                 reservedOp "="

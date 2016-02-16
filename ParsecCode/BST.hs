@@ -17,11 +17,14 @@ insert (n,v) (Tree node l r) = case compare n (fst node) of
   LT -> Tree node (insert (n,v) l) r
   GT -> Tree node l (insert (n,v) r)
 
+-- | the following function inserts an entire list into a BST
 insertList :: Ord n => [(n,v)] -> Tree (n,v) -> Tree (n,v)
 insertList (pair:pairs) Empty = insertList pairs $ insert pair Empty
 insertList (pair:pairs) tree  = insertList pairs $ insert pair tree
 insertList [] tree = tree
 
+-- | The following function retrieves the value n, if present 
+-- in the provided BST
 valOf :: Ord n => n -> Tree (n,v) -> Either String v
 valOf n Empty = Left "Value not found in tree"
 valOf n (Tree node l r) = case compare n (fst node) of
