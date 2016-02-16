@@ -72,6 +72,16 @@ evalA vars (Abs x) = unFrame vars x absV
 evalA vars (Sqrt x) = unFrame vars x sqrtV
 
 evalA vars (Fact x) = unFrame vars x factV
+
+evalA vars (Sine x) = unFrame vars x sinV
+
+evalA vars (Cos x) = unFrame vars x cosV
+
+evalA vars (Sinh x) = unFrame vars x sinhV
+
+evalA vars (Cosh x) = unFrame vars x coshV
+
+evalA vars (Log x) = unFrame vars x logV
 -----------------------------------------------------------------
 -- Function Application Frames
 -----------------------------------------------------------------

@@ -85,11 +85,11 @@ ltV _ _                         = Left "Order check of incompatible types."
 ------------------------------------------------------------
 --Absolute Value function for floats and ints
 absV                             :: Value -> Either String Value
-absV (I x)                       | x < 0       = Right (I (-x))
-                                 | otherwise   = Right (I x)
+absV (I x)                       | x < 0       = Right $ I $ -x
+                                 | otherwise   = Right $ I $ x
 
-absV (F x)                       | x < 0       = Right (F (-x))
-                                 | otherwise   = Right (F x)
+absV (F x)                       | x < 0       = Right $ F $ -x
+                                 | otherwise   = Right $F $ x
 absV _                           = Left "Absolute Value of incompatible type"
 --------------------------------------------------------------
 --Power function for floats and ints -- Negative exponents and float exponents not supported
@@ -114,7 +114,7 @@ modV _ _                         = Left "Modulo with incompatible types."
 --Factorial function. Only works with positive integers.
 
 factV				   :: Value -> Either String Value
-factV  (I x)			   | x > 0	  = Right (I (product [1..x])) 
+factV  (I x)			   | x > 0	  = Right $ I $ product $ [1..x] 
 				   | x < 0 	  = Left "Factorial operation with negative number."
 factV _ 			   = Left "Factorial with incompatible types."
 
@@ -122,10 +122,62 @@ factV _ 			   = Left "Factorial with incompatible types."
 --Square root function.
 
 sqrtV				   :: Value -> Either String Value
-sqrtV (I x)                        | x > 0 	  = Right (F (sqrt (fromIntegral(x)))) 
+sqrtV (I x)                        | x > 0 	  = Right $ F $ sqrt $ fromIntegral $ x
                                    | x < 0	  = Left "Square root of negative number."
 
-sqrtV (F x)			   | x > 0 	  = Right (F (sqrt (x)))
+sqrtV (F x)			   | x > 0 	  = Right $ F $ sqrt $ x
 				   | x < 0	  = Left "Square root of negative number."
 
 sqrtV _				   = Left "Square root with incompatible types."
+
+--------------------------------------------------------------
+--Sine function.
+
+sinV                               :: Value -> Either String Value
+sinV (I x)                         = Right $ F $ sin $ fromIntegral $ x
+   
+sinV (F x)                         = Right $ F $ sin x 
+
+sinV _                             = Left "Sine with incompatible types."
+
+--------------------------------------------------------------
+--Cosine function.
+
+cosV                               :: Value -> Either String Value
+cosV (I x)                         = Right $ F $ cos $ fromIntegral $ x
+                                                                         
+cosV (F x)                         = Right $ F $ cos $ x
+                                   
+cosV _                             = Left "Cosine with incompatible types."
+
+--------------------------------------------------------------
+--Hyperbolic sine function.
+
+sinhV                               :: Value -> Either String Value
+sinhV (I x)                         = Right $ F $ sinh $ fromIntegral $ x
+                                                                             
+sinhV (F x)                         = Right $ F $ sinh $ x
+                                   
+sinhV _                             = Left "Hyperbolic sin with incompatible types."
+
+--------------------------------------------------------------
+--Hyperbolic cosine function.
+
+coshV                               :: Value -> Either String Value
+coshV (I x)                         = Right $ F $ cosh $ fromIntegral $ x
+                                    
+coshV (F x)                         = Right $ F $ cosh $ x
+                                    
+coshV _                             = Left "Hyperbolic cosine with incompatible types."
+
+--------------------------------------------------------------
+--Logarithmic function.
+
+logV                                :: Value -> Either String Value
+logV (I x)                          | x > 0        = Right $ F $ log $ fromIntegral $ x
+                                    | x < 0        = Left "Not a number."
+
+logV (F x)                          | x > 0        = Right $ F $ log $ x
+                                    | x < 0        = Left "Not a number."
+
+logV _                              = Left "Logarithmic function with incompatible types."

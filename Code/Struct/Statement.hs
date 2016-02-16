@@ -42,6 +42,11 @@ data AExpr = Val Value
   | Pow AExpr AExpr
   | Fact AExpr
   | Sqrt AExpr
+  | Sine AExpr
+  | Cos AExpr
+  | Sinh AExpr
+  | Cosh AExpr
+  | Log AExpr
     deriving (Show, Eq)
 
 
@@ -229,6 +234,31 @@ pFactor = do f <- float
                     e <- pAExpr
                     symbol ")"
                     return (Sqrt e)
+             ||| do symbol "Sin"
+                    symbol "("
+                    e <- pAExpr
+                    symbol ")"
+                    return (Sine e)
+             ||| do symbol "Cos"
+                    symbol "("
+                    e <- pAExpr
+                    symbol ")"
+                    return (Cos e)
+             ||| do symbol "Sinh"
+                    symbol "("
+                    e <- pAExpr
+                    symbol ")"
+                    return (Sinh e)
+             ||| do symbol "Cosh"
+                    symbol "("
+                    e <- pAExpr
+                    symbol ")"
+                    return (Cosh e)
+             ||| do symbol "Ln"
+                    symbol "("
+                    e <- pAExpr
+                    symbol ")"
+                    return (Log e)
                           
 
              
