@@ -44,4 +44,4 @@ addHistory state command =  state { numCalcs = (numCalcs state)  + 1,
                                 history = (history state) ++ [command] }
                                                                      
 fetchHistory :: CalcState -> Integer -> Either String Stmt
-fetchHistory st x = getN (history st) x
+fetchHistory st x = getN (history st) 

@@ -10,21 +10,27 @@ import CalcState
 import Eval
 
 main :: IO ()
-main = runInputT defaultSettings $ prompt initState
+main = do putStrLn printWelcome
+          runInputT defaultSettings $ prompt initState
 
 prompt :: CalcState -> InputT IO ()
 prompt st = do x <- getInputLine (show (numCalcs st) ++ "> ")
                case x of
                  Just input ->
-                   case parse statement "" input of
-                     Right stmt -> do x <- process st stmt
-                                      case x of
-                                        Right st' -> prompt st'
-                                        Left error -> do outputStrLn error
-                                                         prompt st
-                                          
-                     Left error -> do outputStrLn $ show error
-                                      prompt st
+                    do y <- parseStatement st input
+                       case y of 
+                         Right x -> prompt x
+                         Left "exit" -> outputStrLn "Bye!"
+                         Left error -> do outputStrLn error
+                                          prompt st
+
+                   
 
 printExpr :: CalcState -> Expr -> InputT IO ()
 printExpr st expr = outputStrLn $ show $ eval st expr
+
+printWelcome :: String
+printWelcome = "============================================================"
+               ++ "\nWelcome to Haskell Calc!\n" ++
+               "============================================================"
+               ++ "\nEnter \"help\" for more information.\n"

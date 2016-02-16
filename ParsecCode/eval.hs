@@ -1,17 +1,45 @@
 module Eval where
 
 import Control.Monad.IO.Class
+import Text.ParserCombinators.Parsec
 import System.Console.Haskeline
 import CalcState
 import CalcParser
 import Apply
 import BST
 
+
+parseStatement :: CalcState -> String -> InputT IO (Either String CalcState)
+parseStatement st input = 
+  case parse statement "" input of
+    Right stmt -> do x <- process st stmt
+                     case x of
+                       Right st'  -> do let st'' = addHistory st' stmt
+                                        return $ Right st''
+                       Left x -> return $ Left x
+                       
+    Left error -> do outputStrLn $ show error
+                     return $ Right st
+
+
+
 {- | Processing of Statements
 
 -}
 process :: CalcState -> Stmt -> InputT IO (Either String CalcState)
 
+process st Quit = return $ Left "exit"
+process st Help = do contents <- liftIO $ readFile "../README.md"
+                     outputStrLn contents
+                     return $ Right st
+                     
+
+process st (Load file) = do contents <- liftIO $ readFile file
+                            do x <- parseStatement st contents 
+                               case x of
+                                 Right st -> return $ Right st 
+                                 Left error -> return $ Left error
+  
 process st (Stmts []) = return $ Right st
 process st (Stmts stmts) =
   do x <- process st (head stmts)
@@ -55,8 +83,7 @@ process st (Exec name args) =
 
       case function of 
         Right x -> do st' <- process (genFuncState st x values) (body x) 
-                      return st' -- $ updateVars "it" (valOf ) st
-                             
+                      return $ Right st
         Left error -> return $ Left $  "Function could not be found: \n" ++ error
     
       where function = valOf name (funcs st)
@@ -67,9 +94,12 @@ process st (Print expr) =
     Right x -> do outputStrLn $ show x
                   return $ Right st
                                                      
- 
+
+process st (Hist arg) = case fetchHistory st arg of
+  Right x -> process st x
+  Left x -> return $ Left $ "History " ++ x ++ ": " ++ (show arg)
                                       
-{- | Evaluation of arithemetic and boolean expressions
+{- Evaluation of arithemetic and boolean expressions
 
 -}
 evalList :: CalcState -> [Expr] -> Either String [Value]
@@ -82,8 +112,6 @@ evalList st (ex:exs) =
         Right xs -> Right $ x : xs
 evalList st [] = Right []
         
-  
-
 eval :: CalcState -> Expr -> Either String Value
 eval st (Ar expr) = evalA st expr
 eval st (Bl expr) = evalB st expr

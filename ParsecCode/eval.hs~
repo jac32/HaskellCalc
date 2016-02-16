@@ -56,8 +56,6 @@ process st (Exec name args) =
       case function of 
         Right x -> do st' <- process (genFuncState st x values) (body x) 
                       return st' -- $ updateVars "it" (valOf ) st
-
-                      
                              
         Left error -> return $ Left $  "Function could not be found: \n" ++ error
     
