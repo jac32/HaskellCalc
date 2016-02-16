@@ -5,6 +5,17 @@ Haskell Calc
 
 Version 1.0 (with Parsec)
 
+Build Instructions
+----------------------
+The build process has been automated using cabal. 
+This allows for building of the executable in a few easy steps.
+Move to the HaskellCalc directory and enter the following into the terminal:
+1. `cabal configure`
+2. `cabal build`
+The executable is created within a folder called `dist`.
+To clean up run `cabal clean`
+
+	
 What
 -----
 
