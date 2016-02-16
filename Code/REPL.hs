@@ -34,15 +34,12 @@ updateFuncs :: Name -> Stmt -> State -> State
 updateFuncs n stmt st = st { funcs = insert (n, stmt) (funcs st) }
 
 
--- | Removes the given name and matching value from the list of variables
-dropVar :: Name -> Tree (Name,Value) -> Tree (Name,Value)
-dropVar name vars = remove name vars
-
--- Add a command to the command history in the state
+-- |Add a command to the command history in the state
 addHistory :: State -> Stmt -> Value -> State
-addHistory state command value = state { numCalcs = (numCalcs state)  + 1,
-                                   history = (history state) ++ [command],
-                                   results = value : (results state) }
+addHistory state command value = do let st' = updateVars ("it") value state
+                                    st' { numCalcs = (numCalcs st')  + 1,
+                                    history = (history state) ++ [command],
+                                    results = value : (results st') }
 
 fetchHistory :: Int -> State -> Stmt
 fetchHistory x st = (history st) !! x
@@ -52,34 +49,22 @@ processStmt st (Stmts x y) = do st' <- processStmt st  x
                                 st' <- processStmt st' y
                                 return st'
 
--- Processing arithmetic and boolean expressions
-processStmt st (AEval e) = do outputStrLn(show val)
-                              case val of
-                                Right x -> return (addHistory st (AEval e) x)
-                                Left x -> do outputStrLn ("Could not evaluate: " ++ x)
-                                             return st
-                                where val = (evalA (vars st) e)
+-- | Processing arithmetic and boolean expressions
+processStmt st (Eval e) = case val of
+                            Right x -> return (addHistory st (Eval e) x)
+                            Left x -> do outputStrLn ("Could not evaluate: " ++ x)
+                                         return st
+                            where val = (eval (vars st) e)
 
-processStmt st (BEval e) = do outputStrLn(show val)
-                              case val of
-                                Right x -> return (addHistory st (BEval e) x)
-                                where val = (evalB (vars st) e)
-
--- Processing arithmetic and boolean assignments
-processStmt st (ASet var e) = case (evalA (vars st) e) of
-  Right x -> do let st' = addHistory (updateVars var x st) (ASet var e) x
+-- | Processing arithmetic and boolean assignments
+processStmt st (Set var e) = case (eval (vars st) e) of
+  Right x -> do let st' = addHistory (updateVars var x st) (Set var e) x
                 return st'
   Left x -> do outputStrLn x
                return st
-                                                          
-processStmt st (BSet var e) = case (evalB (vars st) e) of
-  Right x -> do let st' = addHistory (updateVars var x st) (BSet var e) x
-                return st'
-  Left x -> do outputStrLn x
-               return st
+                                                         
 
-
--- Processing loops and conditionals
+-- |Processing loops and conditionals
 processStmt st (If cond stmt) = case (evalB (vars st) cond) of
   Right (B True) -> do st' <- processStmt st stmt 
                        return st'
@@ -111,16 +96,13 @@ processStmt st (Hist e) = case (evalA (vars st) e) of
                 return st
 
 
--- Processing of functions
+-- |Processing of functions
 processStmt st (Func name stmt) = do let st' =  updateFuncs name stmt st
                                      return st'
                                      
 processStmt st (Exec name) = case (valOf name (funcs st)) of
   Right x -> do st' <- processStmt initState x
-                outputStrLn (show (results st))
-                outputStrLn (show (results st'))
                 let st'' = addHistory st (Exec name)  (head (results st'))
-                outputStrLn (show (results st''))
                 return st''
   Left x -> do outputStrLn (show x)
                return st

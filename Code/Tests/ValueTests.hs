@@ -1,7 +1,9 @@
+module Tests.ValueTests where
+
 import Test.HUnit
 import Struct.Value
 
-additionTests = TestList $ map TestCase [
+additionValueTests = TestList $ map TestCase [
   (assertEqual "Integer only addition"
    ((Right (I 5)) :: Either String Value)
    (addV (I 3) (I 2))),
@@ -15,7 +17,7 @@ additionTests = TestList $ map TestCase [
    (addV (I 3) (F 2.5)))
   ]
 
-subtractionTests = TestList $ map TestCase [
+subtractionValueTests = TestList $ map TestCase [
   (assertEqual "Integer only subtraction"
    ((Right (I 5)) :: Either String Value)
    (subV (I 8) (I 3))),
@@ -29,7 +31,7 @@ subtractionTests = TestList $ map TestCase [
    (subV (I 8) (F 2.5)))
   ]
 
-multiplicationTests = TestList $ map TestCase [
+multiplicationValueTests = TestList $ map TestCase [
   (assertEqual "Integer only multiplication"
    ((Right (I 10)) :: Either String Value)
    (mulV (I 5) (I 2))),
@@ -43,7 +45,7 @@ multiplicationTests = TestList $ map TestCase [
    (mulV (I 5) (F 1.1)))
   ]
 
-divisionTests = TestList $ map TestCase [
+divisionValueTests = TestList $ map TestCase [
   (assertEqual "Integer only division"
    ((Right (I 10)) :: Either String Value)
    (divV (I 100) (I 10))),
@@ -74,7 +76,7 @@ divisionTests = TestList $ map TestCase [
   ]
 
 
-notTests = TestList $ map TestCase [
+notValueTests = TestList $ map TestCase [
   (assertEqual "NOT operation on True"
    (Right (B False) :: Either String Value)
    (notV (B True))),
@@ -88,7 +90,7 @@ notTests = TestList $ map TestCase [
    (notV (I 3)))
   ]
 
-andTests = TestList $ map TestCase [
+andValueTests = TestList $ map TestCase [
   (assertEqual "AND operation True && True"
    (Right (B True) :: Either String Value)
    (andV (B True) (B True))),
@@ -123,7 +125,7 @@ andTests = TestList $ map TestCase [
   ]
 
 
-orTests = TestList $ map TestCase [
+orValueTests = TestList $ map TestCase [
    (assertEqual "OR operation True && True"
    (Right (B True) :: Either String Value)
    (orV (B True) (B True))),
@@ -167,6 +169,5 @@ lessThanTests = TestList $ map TestCase [
 greaterThanTests = TestList $ map TestCase [
   ]
 -}
-valueTests = TestList [additionTests, subtractionTests, multiplicationTests, divisionTests, notTests, andTests, orTests]
                        
                       
