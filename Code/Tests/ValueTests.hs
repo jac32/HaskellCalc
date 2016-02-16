@@ -23,8 +23,8 @@ subtractionValueTests = TestList $ map TestCase [
    (subV (I 8) (I 3))),
   
   (assertEqual "Float only subtraction"
-   ((Right (F 5.5)) :: Either String Value)
-   (subV (F 9.6) (F 4.1))),
+   ((Right (F 4.88)) :: Either String Value)
+   (subV (F 9.0) (F 4.12))),
   
   (assertEqual "Mixed Int Float subtraction"
    ((Right (F 5.5)) :: Either String Value)
@@ -159,15 +159,62 @@ orValueTests = TestList $ map TestCase [
    (orV (I 2) (F 3.5)))
   ]
 
-{-
-equalityTests = TestList $ map TestCase [
+
+eqValueTests = TestList $ map TestCase [
+   (assertEqual "EQ operation on ints 2==2"
+   (Right (B True) :: Either String Value)
+   (eqV ((I 2)) ((I 2)))),
+   
+   (assertEqual "EQ operation on float and int 2.0==2"
+   (Right (B True) :: Either String Value)
+   (eqV ((F 2.0)) ((I 2)))),
+   
+   (assertEqual "EQ operation on float and int (false) 2.2==2"
+   (Right (B False) :: Either String Value)
+   (eqV ((F 2.2)) ((I 2)))),
+
+   (assertEqual "EQ operation on Floats2.2==2.2"
+   (Right (B True) :: Either String Value)
+   (eqV ((F 2.2)) ((F 2.2))))
   ]
 
-lessThanTests = TestList $ map TestCase [
+
+ltValueTests = TestList $ map TestCase [
+   (assertEqual "LT operation on floats 2<3"
+   (Right (B True) :: Either String Value)
+   (ltV ((I 2)) ((I 3)))),
+
+   (assertEqual "LT operation 3<2"
+   (Right (B False) :: Either String Value)
+   (ltV ((I 3)) ((I 2)))),
+
+   (assertEqual "LT operation on floats 2.0<3.0"
+   (Right (B True) :: Either String Value)
+   (ltV ((F 2.0)) ((F 3.0)))),
+   
+   (assertEqual "LT operation on float and int 2.0 < 3"
+   (Right (B True) :: Either String Value)
+   (ltV ((F 2.0)) ((I 3))))
+   
   ]
 
-greaterThanTests = TestList $ map TestCase [
-  ]
--}
+gtValueTests = TestList $ map TestCase [
+   (assertEqual "GT operation on floats 3>2"
+   (Right (B True) :: Either String Value)
+   (gtV ((I 3)) ((I 2)))),
+
+   (assertEqual "GT operation 2>3"
+   (Right (B False) :: Either String Value)
+   (gtV ((I 2)) ((I 3)))),
+
+   (assertEqual "GT operation on floats 3.0>2.0"
+   (Right (B True) :: Either String Value)
+   (gtV ((F 3.0)) ((F 2.0)))),
+   
+   (assertEqual "GT operation on float and int 3.0 > 2"
+   (Right (B True) :: Either String Value)
+   (gtV ((F 3.0)) ((I 2))))
+   ] 
+
                        
                       

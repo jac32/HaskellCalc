@@ -227,38 +227,19 @@ pFactor = do f <- float
                     return e
              ||| do e <- pAbs
                     return e 
-             ||| do symbol "Sqrt"
-                    e <- pBrac 
-                    return (Sqrt e)
-<<<<<<< HEAD
-             ||| do symbol "Sin"
-                    symbol "("
-                    e <- pAExpr
-                    symbol ")"
-                    return (Sine e)
-             ||| do symbol "Cos"
-                    symbol "("
-                    e <- pAExpr
-                    symbol ")"
-                    return (Cos e)
-             ||| do symbol "Sinh"
-                    symbol "("
-                    e <- pAExpr
-                    symbol ")"
-                    return (Sinh e)
-             ||| do symbol "Cosh"
-                    symbol "("
-                    e <- pAExpr
-                    symbol ")"
-                    return (Cosh e)
-             ||| do symbol "Ln"
-                    symbol "("
-                    e <- pAExpr
-                    symbol ")"
-                    return (Log e)
+             ||| do e <- pSqrt
+                    return e 
+             ||| do e <- pSin
+                    return e
+             ||| do e <- pCos
+                    return e
+             ||| do e <- pSinh
+                    return e 
+             ||| do e <- pCosh
+                    return e 
+             ||| do e <- pLog
+                    return e 
                           
-=======
->>>>>>> c7794ac767e19824ce6f1b2c8c34ccf47b8bcbe6
 
 
 pPow :: AExpr -> Parser AExpr
@@ -326,7 +307,6 @@ pBody = do symbol "{"
            return s
 
 
-
 pBBrac :: Parser BExpr 
 pBBrac = do symbol "("
             e <- pBExpr
@@ -337,7 +317,9 @@ pBrac :: Parser AExpr
 pBrac = do symbol "("
            e <- pAExpr
            symbol ")"
-           return e
+           do p <- pPow e
+              return p
+              |||return e
 
 
 pAbs :: Parser AExpr 
@@ -349,3 +331,35 @@ pAbs = do symbol "|"
 pFact :: Int -> Parser AExpr
 pFact i = do symbol "!"
              return (Fact (Val (I i)))
+
+pSqrt :: Parser AExpr
+pSqrt = do symbol "sqrt"
+           e <- pBrac 
+           return (Sqrt e)
+      
+pSin :: Parser AExpr
+pSin = do symbol "sin"
+          e <- pBrac
+          return (Sine e)
+
+pCos :: Parser AExpr
+pCos = do symbol "cos"
+          e <- pBrac
+          return (Cos e)       
+
+
+pSinh :: Parser AExpr
+pSinh = do symbol "sinh"
+           e <- pBrac
+           return (Sinh e)
+            
+pCosh :: Parser AExpr
+pCosh = do symbol "cosh"
+           e<-pBrac
+           return (Cosh e)
+             
+pLog :: Parser AExpr
+pLog = do symbol "log"
+          e<-pBrac
+          return (Log e)
+              
