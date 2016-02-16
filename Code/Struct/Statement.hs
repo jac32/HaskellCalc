@@ -280,7 +280,7 @@ pAnd b1 = do symbol "&&"
              return (And b1 b2)
 
 pOr :: BExpr -> Parser BExpr 
-pOr b1 = do symbol "&&"
+pOr b1 = do symbol "||"
             b2 <- pBExpr
             return (Or b1 b2)
 
