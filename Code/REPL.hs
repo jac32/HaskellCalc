@@ -186,4 +186,5 @@ executeFile st adr = do contents <- liftIO $ readFile adr
 
   
 printHelp :: InputT IO ()
-printHelp = outputStrLn "No help text available"
+printHelp = do contents <- liftIO $ readFile "README.txt"
+               outputStrLn contents
